@@ -11,17 +11,19 @@
     "ios": {
       "supportsTablet": true,
       "icon": {
-        "dark": "./assets/icon/ios_dark.png",
-        "light": "./assets/icon/ios_light.png",
-        "tinted": "./assets/icon/ios_tinted.png"
-      }
+        "dark": "./assets/icons/ios-dark.png",
+        "light": "./assets/icons/ios-light.png",
+        "tinted": "./assets/icons/ios-tinted.png"
+      },
+      "bundleIdentifier": "com.hxyd06.BarBuddy"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/adaptive-icon.png",
         "monochromeImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.hxyd06.BarBuddy"
     },
     "web": {
       "bundler": "metro",
@@ -46,6 +48,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ae4e71ab-e4d1-4ac0-87f6-634f5296da89"
+      }
     }
   }
 }
