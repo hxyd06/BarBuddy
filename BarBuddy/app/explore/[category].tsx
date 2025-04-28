@@ -4,7 +4,7 @@ import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firesto
 import { db } from '@/firebase/firebaseConfig';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export const unstable_settings = {
     headerShown: false,
@@ -25,26 +25,29 @@ export default function CategoryDrinksScreen() {
 
   const fetchCocktails = async () => {
     try {
-      const q = query(collection(db, 'cocktails'), where('categories', 'array-contains', capitalizeFirstLetter(category as string)));
-      const querySnapshot = await getDocs(q);
-      const drinksData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCocktails(drinksData);
-    } catch (error) {
-      console.error('Error fetching cocktails:', error);
-    }
+        const q = query(
+            collection(db, 'cocktails'),
+            where('categories', 'array-contains', (category as string).toLowerCase())
+          );          
+        const querySnapshot = await getDocs(q);
+        const drinksData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setCocktails(drinksData);
+        } catch (error) {
+        console.error('Error fetching cocktails:', error);
+        }
   };
 
   const fetchCategoryImage = async () => {
     try {
-      const docRef = doc(db, 'categories', capitalizeFirstLetter(category as string));
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setCategoryImage(data.image);
-      }
+        const docRef = doc(db, 'categories', category as string);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setCategoryImage(data.image);
+        }
     } catch (error) {
       console.error('Error fetching category image:', error);
     }
@@ -64,6 +67,11 @@ export default function CategoryDrinksScreen() {
         ) : (
           <View style={[styles.headerImage, { backgroundColor: '#ddd' }]} />
         )}
+        
+        <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']} // from transparent at top → black at bottom
+            style={styles.gradientOverlay}
+        />
 
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -110,6 +118,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  gradientOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },  
   headerImage: {
     width: '100%',
     height: 180,
