@@ -1,109 +1,185 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { db } from '@/firebase/firebaseConfig';
+import { collection, getDocs } from 'firebase/firestore';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export default function ExploreScreen() {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [drinks, setDrinks] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
 
-export default function TabTwoScreen() {
+  useEffect(() => {
+    fetchCategories();
+    fetchDrinks();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'categories'));
+      const categoriesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchDrinks = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'cocktails'));
+      const drinksData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDrinks(drinksData);
+    } catch (error) {
+      console.error('Error fetching drinks:', error);
+    }
+  };
+
+  const filteredDrinks = drinks.filter((drink) =>
+    drink.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isSearching = searchQuery.length > 0;
+  const dataToRender = isSearching ? filteredDrinks : categories;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Explore Categories</Text>
+
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search for drinks..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={styles.searchInput}
+          />
+        </View>
+
+        <FlatList
+          data={dataToRender}
+          keyExtractor={(item) => item.id}
+          numColumns={isSearching ? 1 : 2}
+          key={isSearching ? 'drinks' : 'categories'} // 🔥 force remount when numColumns changes
+          columnWrapperStyle={!isSearching ? { justifyContent: 'space-between' } : undefined}
+          contentContainerStyle={{
+            paddingBottom: 20,
+            flexGrow: 1,
+            justifyContent: dataToRender.length === 0 ? 'center' : undefined,
+            alignItems: dataToRender.length === 0 ? 'center' : undefined,
+          }}
+          ListEmptyComponent={isSearching ? (
+            <Text style={{ fontSize: 16, color: 'gray', marginTop: 20 }}>
+              0 drinks found
+            </Text>
+          ) : null}
+          renderItem={({ item }) => (
+            isSearching ? (
+              <TouchableOpacity
+                style={styles.drinkCard}
+                onPress={() => {}}
+              >
+                {item.image ? (
+                  <Image source={{ uri: item.image }} style={styles.drinkImage} />
+                ) : (
+                  <View style={styles.placeholderBox} />
+                )}
+                <Text style={styles.drinkText}>{item.name}</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.categoryCard}
+                onPress={() => router.push(`/explore/${item.id}`)}
+              >
+                {item.image ? (
+                  <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                ) : (
+                  <View style={styles.categoryPlaceholder} />
+                )}
+                <Text style={styles.categoryText}>{item.name}</Text>
+              </TouchableOpacity>
+            )
+          )}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 10,
   },
-  titleContainer: {
+  header: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  searchContainer: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  searchInput: {
+    height: 40,
+  },
+  categoryCard: {
+    width: '48%',
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  categoryImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 5,
+  },
+  categoryText: {
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  drinkCard: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+  },
+  drinkImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  drinkText: {
+    fontSize: 18,
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  placeholderBox: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  categoryPlaceholder: { // ✨ New: placeholder for category boxes
+    width: '100%',
+    height: 120,
+    backgroundColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 5,
   },
 });

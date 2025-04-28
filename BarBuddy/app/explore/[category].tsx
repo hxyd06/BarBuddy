@@ -1,85 +1,192 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebaseConfig';
+import { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+export const unstable_settings = {
+    headerShown: false,
+  };
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function CategoryDrinksScreen() {
+  const { category } = useLocalSearchParams();
+  const router = useRouter();
+  const [cocktails, setCocktails] = useState<any[]>([]);
+  const [categoryImage, setCategoryImage] = useState<string>('');
+
+  useEffect(() => {
+    if (category) {
+      fetchCocktails();
+      fetchCategoryImage();
+    }
+  }, [category]);
+
+  const fetchCocktails = async () => {
+    try {
+        const q = query(
+            collection(db, 'cocktails'),
+            where('categories', 'array-contains', (category as string).toLowerCase())
+          );          
+        const querySnapshot = await getDocs(q);
+        const drinksData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setCocktails(drinksData);
+        } catch (error) {
+        console.error('Error fetching cocktails:', error);
+        }
+  };
+
+  const fetchCategoryImage = async () => {
+    try {
+        const docRef = doc(db, 'categories', category as string);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setCategoryImage(data.image);
+        }
+    } catch (error) {
+      console.error('Error fetching category image:', error);
+    }
+  };
+
+  const capitalizeFirstLetter = (str: string | undefined) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false, // 🔥 Hide header for tabs
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute', // Transparent on iOS
-          },
-          default: {},
-        }),
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
-        }}
+    <View style={styles.container}>
+      {/* Header Image */}
+      <View>
+        {categoryImage ? (
+          <Image source={{ uri: categoryImage }} style={styles.headerImage} />
+        ) : (
+          <View style={[styles.headerImage, { backgroundColor: '#ddd' }]} />
+        )}
+        
+        <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']} // from transparent at top → black at bottom
+            style={styles.gradientOverlay}
+        />
+
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="white" />
+        </TouchableOpacity>
+
+        {/* Title on Image */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleText}>{capitalizeFirstLetter(category as string)}</Text>
+          <Text style={styles.subtitle}>{cocktails.length} Results</Text>
+        </View>
+      </View>
+
+      {/* Drink List */}
+      <FlatList
+        data={cocktails}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.card}>
+            {item.image ? (
+              <Image source={{ uri: item.image }} style={styles.cardImage} />
+            ) : (
+              <View style={styles.placeholder} />
+            )}
+            <View style={styles.info}>
+              <Text style={styles.drinkName}>{item.name}</Text>
+              {item.rating && (
+                <View style={styles.ratingBadge}>
+                  <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={{ padding: 10 }}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="generator"
-        options={{
-          title: 'Generator',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Map',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="about"
-        options={{
-          title: 'About',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }: { color: string }) => (
-            <IconSymbol size={28} name="gearshape.fill" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    </View>
   );
 }
+
+/** 🛠 STYLES */
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },  
+  headerImage: {
+    width: '100%',
+    height: 180,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 6,
+    borderRadius: 30,
+  },
+  titleContainer: {
+    position: 'absolute',
+    bottom: 10,
+    left: 20,
+  },
+  titleText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#eee',
+    marginTop: 5,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  cardImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#ccc',
+    marginRight: 10,
+  },
+  placeholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#ccc',
+    marginRight: 10,
+  },
+  info: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  drinkName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  ratingBadge: {
+    backgroundColor: '#eee',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  ratingText: {
+    fontWeight: 'bold',
+  },
+});
