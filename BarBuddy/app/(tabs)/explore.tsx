@@ -52,16 +52,28 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <View style={styles.container}>
-        <Text style={styles.header}>Explore Categories</Text>
+        <Text style={styles.header}>Explore</Text>
 
         <View style={styles.searchContainer}>
-          <TextInput
-            placeholder="Search for drinks..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TextInput
+              placeholder="Search for drinks..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={[styles.searchInput, { flex: 1 }]}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
+        {isSearching && (
+          <Text style={styles.resultCount}>
+            {filteredDrinks.length} result{filteredDrinks.length !== 1 ? 's' : ''}
+          </Text>
+        )}
 
         <FlatList
           data={dataToRender}
@@ -84,7 +96,7 @@ export default function ExploreScreen() {
             isSearching ? (
               <TouchableOpacity
                 style={styles.drinkCard}
-                onPress={() => {}}
+                onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}
               >
                 {item.image ? (
                   <Image source={{ uri: item.image }} style={styles.drinkImage} />
@@ -120,7 +132,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   header: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 10,
   },
@@ -132,6 +144,17 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     height: 40,
+  },
+  resultCount: {
+    fontSize: 14,
+    color: 'gray',
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+  cancelText: {
+    color: '#007AFF',
+    fontSize: 16,
+    marginLeft: 10,
   },
   categoryCard: {
     width: '48%',

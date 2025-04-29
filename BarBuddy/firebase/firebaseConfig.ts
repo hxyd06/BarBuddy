@@ -2,6 +2,8 @@
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getFunctions } from 'firebase/functions';
+import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
 
 // TODO: Add SDKs for Firebase products that you want to use
 
@@ -34,3 +36,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 
 export const db = getFirestore(app);
+export const functions = getFunctions(app);
+
+const vertexAI = getVertexAI(app);
+
+export const model = getGenerativeModel(vertexAI, { model: 'gemini-1.5-flash' });

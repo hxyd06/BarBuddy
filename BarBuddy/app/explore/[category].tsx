@@ -69,7 +69,7 @@ export default function CategoryDrinksScreen() {
         )}
         
         <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']} // from transparent at top → black at bottom
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
             style={styles.gradientOverlay}
         />
 
@@ -90,7 +90,10 @@ export default function CategoryDrinksScreen() {
         data={cocktails}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)} // 🛠 encode name
+          >
             {item.image ? (
               <Image source={{ uri: item.image }} style={styles.cardImage} />
             ) : (
@@ -112,7 +115,7 @@ export default function CategoryDrinksScreen() {
   );
 }
 
-/** 🛠 STYLES */
+/* Styles */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
