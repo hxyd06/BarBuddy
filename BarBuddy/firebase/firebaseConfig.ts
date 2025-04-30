@@ -4,6 +4,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions';
 import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
+import { getAuth } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Add SDKs for Firebase products that you want to use
 
@@ -37,6 +39,8 @@ const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
+
+export const auth = getAuth(app);
 
 const vertexAI = getVertexAI(app);
 

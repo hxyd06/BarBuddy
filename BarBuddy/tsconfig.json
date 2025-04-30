@@ -6,7 +6,8 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "types": ["expo", "react", "react-native"]
   },
   "include": [
     "**/*.ts",
