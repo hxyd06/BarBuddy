@@ -136,9 +136,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#5c5c9a',
+    textAlign: 'center',
   },
   searchContainer: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f5f5fc',
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 20,
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   cancelText: {
-    color: '#007AFF',
+    color: '#5c5c9a',
     fontSize: 16,
     marginLeft: 10,
   },
