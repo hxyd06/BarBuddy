@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { model, db } from '@/firebase/firebaseConfig';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, getDocs, collection } from 'firebase/firestore';
 import { auth } from '@/firebase/firebaseConfig';
 
 export default function DrinkDetailScreen() {
@@ -14,6 +14,7 @@ export default function DrinkDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [aiDescription, setAiDescription] = useState<string>('');
   const [isSaved, setIsSaved] = useState(false);
+  const [averageRating, setAverageRating] = useState<number>(0);
 
   useEffect(() => {
     if (drink) {
@@ -29,6 +30,16 @@ export default function DrinkDetailScreen() {
       if (data.drinks && data.drinks.length > 0) {
         const cocktail = data.drinks[0];
         setDrinkData(cocktail);
+
+        // Fetch and calculate average rating
+        const reviewsRef = collection(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''), 'reviews');
+        const reviewSnap = await getDocs(reviewsRef);
+        if (!reviewSnap.empty) {
+          const total = reviewSnap.docs.reduce((sum, doc) => sum + (doc.data().rating || 0), 0);
+          setAverageRating(total / reviewSnap.size);
+        } else {
+          setAverageRating(0);
+        }
 
         if (auth.currentUser) {
           const savedRef = doc(db, 'users', auth.currentUser.uid, 'savedRecipes', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
@@ -124,10 +135,12 @@ export default function DrinkDetailScreen() {
                 <Text style={styles.viewSavedText}>View Saved</Text>
               </TouchableOpacity>
             )}
+
             <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
               <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
             </TouchableOpacity>
-          </View>
+          </View>   
+
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />
@@ -137,6 +150,9 @@ export default function DrinkDetailScreen() {
           <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.gradientOverlay} />
           <View style={styles.titleContainer}>
             <Text style={styles.titleText}>{drinkData.strDrink}</Text>
+            <View style={styles.ratingBadge}>
+              <Text style={styles.ratingText}>{averageRating.toFixed(1)}</Text>
+            </View>
           </View>
         </View>
 
@@ -164,6 +180,14 @@ export default function DrinkDetailScreen() {
 
           <Text style={styles.heading}>Instructions</Text>
           <Text style={styles.text}>{drinkData.strInstructions}</Text>
+        </View>
+
+        <View style={styles.reviewsSection}>
+          <TouchableOpacity
+            style={styles.reviewButton}
+            onPress={() => router.push(`/drink/${drink}/reviews`)}>
+            <Text style={styles.reviewButtonText}>View Reviews</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -228,7 +252,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     left: 20,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+  },  
   titleText: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -261,4 +287,35 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontSize: 16,
   },
+  reviewsSection: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  reviewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#5c5c99',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  reviewButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  ratingBadge: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 18,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },  
 });

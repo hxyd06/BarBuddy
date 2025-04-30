@@ -41,11 +41,27 @@ export default function CategoryDrinksScreen() {
         where('category', '==', categoryName)
       );
       const querySnapshot = await getDocs(q);
-      const drinksData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCocktails(drinksData);
+  
+      const drinksWithRatings = await Promise.all(
+        querySnapshot.docs.map(async (docSnap) => {
+          const data = docSnap.data();
+          const reviewsSnapshot = await getDocs(collection(db, 'cocktails', docSnap.id, 'reviews'));
+  
+          let avgRating = null;
+          if (!reviewsSnapshot.empty) {
+            const total = reviewsSnapshot.docs.reduce((acc, curr) => acc + (curr.data().rating || 0), 0);
+            avgRating = total / reviewsSnapshot.size;
+          }
+  
+          return {
+            id: docSnap.id,
+            ...data,
+            rating: avgRating,
+          };
+        })
+      );
+  
+      setCocktails(drinksWithRatings);
     } catch (error) {
       console.error('Error fetching cocktails:', error);
     }
@@ -106,11 +122,9 @@ export default function CategoryDrinksScreen() {
             )}
             <View style={styles.info}>
               <Text style={styles.drinkName}>{item.name}</Text>
-              {item.rating && (
-                <View style={styles.ratingBadge}>
-                  <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
-                </View>
-              )}
+              <View style={styles.ratingBadge}>
+                  <Text style={styles.ratingText}>{(item.rating ?? 0).toFixed(1)}</Text>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -190,12 +204,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   ratingBadge: {
-    backgroundColor: '#eee',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f5f5fc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   ratingText: {
+    fontSize: 14,
     fontWeight: 'bold',
+    color: '#333',
   },
 });
