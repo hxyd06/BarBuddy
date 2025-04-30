@@ -7,56 +7,61 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export const unstable_settings = {
-    headerShown: false,
-  };
+  headerShown: false,
+};
 
 export default function CategoryDrinksScreen() {
   const { category } = useLocalSearchParams();
   const router = useRouter();
   const [cocktails, setCocktails] = useState<any[]>([]);
   const [categoryImage, setCategoryImage] = useState<string>('');
+  const [categoryName, setCategoryName] = useState<string>(''); // holds real category name like "Coffee / Tea"
+
+  // First fetch category name + image using the category ID (e.g. "coffeeandtea")
+  const fetchCategoryData = async () => {
+    try {
+      const docRef = doc(db, 'categories', category as string);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCategoryName(data.name); // use the real name in drink queries
+        setCategoryImage(data.image || '');
+      }
+    } catch (error) {
+      console.error('Error fetching category data:', error);
+    }
+  };
+
+  // Then fetch cocktails based on the real category name
+  const fetchCocktails = async () => {
+    if (!categoryName) return;
+    try {
+      const q = query(
+        collection(db, 'cocktails'),
+        where('category', '==', categoryName)
+      );
+      const querySnapshot = await getDocs(q);
+      const drinksData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCocktails(drinksData);
+    } catch (error) {
+      console.error('Error fetching cocktails:', error);
+    }
+  };
 
   useEffect(() => {
     if (category) {
-      fetchCocktails();
-      fetchCategoryImage();
+      fetchCategoryData(); // this sets categoryName, which triggers fetchCocktails()
     }
   }, [category]);
 
-  const fetchCocktails = async () => {
-    try {
-        const q = query(
-            collection(db, 'cocktails'),
-            where('categories', 'array-contains', (category as string).toLowerCase())
-          );          
-        const querySnapshot = await getDocs(q);
-        const drinksData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        setCocktails(drinksData);
-        } catch (error) {
-        console.error('Error fetching cocktails:', error);
-        }
-  };
-
-  const fetchCategoryImage = async () => {
-    try {
-        const docRef = doc(db, 'categories', category as string);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            setCategoryImage(data.image);
-        }
-    } catch (error) {
-      console.error('Error fetching category image:', error);
+  useEffect(() => {
+    if (categoryName) {
+      fetchCocktails();
     }
-  };
-
-  const capitalizeFirstLetter = (str: string | undefined) => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
+  }, [categoryName]);
 
   return (
     <View style={styles.container}>
@@ -67,10 +72,10 @@ export default function CategoryDrinksScreen() {
         ) : (
           <View style={[styles.headerImage, { backgroundColor: '#ddd' }]} />
         )}
-        
+
         <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.gradientOverlay}
+          colors={['transparent', 'rgba(0,0,0,0.8)']}
+          style={styles.gradientOverlay}
         />
 
         {/* Back Button */}
@@ -80,7 +85,7 @@ export default function CategoryDrinksScreen() {
 
         {/* Title on Image */}
         <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>{capitalizeFirstLetter(category as string)}</Text>
+          <Text style={styles.titleText}>{categoryName}</Text>
           <Text style={styles.subtitle}>{cocktails.length} Results</Text>
         </View>
       </View>
@@ -92,7 +97,7 @@ export default function CategoryDrinksScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)} // 🛠 encode name
+            onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}
           >
             {item.image ? (
               <Image source={{ uri: item.image }} style={styles.cardImage} />
@@ -115,7 +120,6 @@ export default function CategoryDrinksScreen() {
   );
 }
 
-/* Styles */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-  },  
+  },
   headerImage: {
     width: '100%',
     height: 180,

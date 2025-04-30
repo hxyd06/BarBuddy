@@ -76,11 +76,13 @@ export default function DrinkDetailScreen() {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={28} color="white" />
           </TouchableOpacity>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Header Image and Gradient */}
+      <TouchableOpacity style={styles.saveButton} onPress={() => console.log('Save tapped')}>
+              <Ionicons name="bookmark-outline" size={28} color="white" />
+            </TouchableOpacity>
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />
@@ -93,14 +95,14 @@ export default function DrinkDetailScreen() {
           </View>
         </View>
 
-        {/* AI Generated Description */}
+        
         {aiDescription && (
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>{aiDescription}</Text>
           </View>
         )}
 
-        {/* Ingredients */}
+       
         <View style={styles.content}>
           <Text style={styles.heading}>Ingredients</Text>
           {Array.from({ length: 15 }, (_, i) => i + 1)
@@ -123,7 +125,6 @@ export default function DrinkDetailScreen() {
   );
 }
 
-// Styles remain exactly the same ✅
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -148,6 +149,15 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 10,
   },
+  saveButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 6,
+    borderRadius: 30,
+    zIndex: 10,
+  },  
   titleContainer: {
     position: 'absolute',
     bottom: 10,

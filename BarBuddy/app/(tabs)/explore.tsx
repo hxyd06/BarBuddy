@@ -43,6 +43,7 @@ export default function ExploreScreen() {
   };
 
   const filteredDrinks = drinks.filter((drink) =>
+    typeof drink.name === 'string' &&
     drink.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -82,7 +83,7 @@ export default function ExploreScreen() {
           key={isSearching ? 'drinks' : 'categories'} // 🔥 force remount when numColumns changes
           columnWrapperStyle={!isSearching ? { justifyContent: 'space-between' } : undefined}
           contentContainerStyle={{
-            paddingBottom: 20,
+            paddingBottom: 50,
             flexGrow: 1,
             justifyContent: dataToRender.length === 0 ? 'center' : undefined,
             alignItems: dataToRender.length === 0 ? 'center' : undefined,
