@@ -41,9 +41,10 @@ export const db = getFirestore(app);
 export const functions = getFunctions(app);
 
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 
 const vertexAI = getVertexAI(app);
 
 export const model = getGenerativeModel(vertexAI, { model: 'gemini-1.5-flash' });
 
-export const storage = getStorage(app);
+

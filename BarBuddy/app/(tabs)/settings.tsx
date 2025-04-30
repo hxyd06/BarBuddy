@@ -153,6 +153,11 @@ export default function SettingsScreen() {
           <Text style={styles.listLabel}>Saved Drinks</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/reviews')}>
+          <Ionicons name="chatbubble-ellipses" size={28} color="#5c5c99" style={styles.listIcon} />
+          <Text style={styles.listLabel}>View Your Reviews</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
           <Ionicons
             name={isDarkMode ? 'moon' : 'sunny'}
