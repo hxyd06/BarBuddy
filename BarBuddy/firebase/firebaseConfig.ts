@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions';
 import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
 import { getAuth } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getStorage } from 'firebase/storage';
 
 // TODO: Add SDKs for Firebase products that you want to use
 
@@ -45,3 +45,5 @@ export const auth = getAuth(app);
 const vertexAI = getVertexAI(app);
 
 export const model = getGenerativeModel(vertexAI, { model: 'gemini-1.5-flash' });
+
+export const storage = getStorage(app);

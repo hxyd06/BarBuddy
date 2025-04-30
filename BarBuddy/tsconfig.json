@@ -10,6 +10,7 @@
     "types": ["expo", "react", "react-native"]
   },
   "include": [
+    "app/**/*",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",

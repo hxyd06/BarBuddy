@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { model, db } from '@/firebase/firebaseConfig';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { auth } from '@/firebase/firebaseConfig';
 
 export default function DrinkDetailScreen() {
   const { drink } = useLocalSearchParams();
@@ -12,6 +13,7 @@ export default function DrinkDetailScreen() {
   const [drinkData, setDrinkData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [aiDescription, setAiDescription] = useState<string>('');
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (drink) {
@@ -27,6 +29,12 @@ export default function DrinkDetailScreen() {
       if (data.drinks && data.drinks.length > 0) {
         const cocktail = data.drinks[0];
         setDrinkData(cocktail);
+
+        if (auth.currentUser) {
+          const savedRef = doc(db, 'users', auth.currentUser.uid, 'savedRecipes', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
+          const savedSnap = await getDoc(savedRef);
+          setIsSaved(savedSnap.exists());
+        }
 
         const drinkDocRef = doc(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
         const drinkSnap = await getDoc(drinkDocRef);
@@ -57,6 +65,36 @@ export default function DrinkDetailScreen() {
     }
   };
 
+  const handleSaveDrink = async () => {
+    const user = auth.currentUser;
+    if (!user || !drinkData) return;
+
+    const recipeId = drinkData.strDrink.toLowerCase().replace(/\s+/g, '');
+    const recipeRef = doc(db, 'users', user.uid, 'savedRecipes', recipeId);
+
+    try {
+      if (isSaved) {
+        await deleteDoc(recipeRef);
+        setIsSaved(false);
+      } else {
+        const recipeData = {
+          name: drinkData.strDrink,
+          image: drinkData.strDrinkThumb,
+          ingredients: Array.from({ length: 15 }, (_, i) => ({
+            ingredient: drinkData[`strIngredient${i + 1}`],
+            measure: drinkData[`strMeasure${i + 1}`],
+          })).filter((item) => item.ingredient),
+          instructions: drinkData.strInstructions,
+          savedAt: new Date(),
+        };
+        await setDoc(recipeRef, recipeData);
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error('Error toggling saved recipe:', error);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -80,9 +118,16 @@ export default function DrinkDetailScreen() {
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={28} color="white" />
           </TouchableOpacity>
-      <TouchableOpacity style={styles.saveButton} onPress={() => console.log('Save tapped')}>
-              <Ionicons name="bookmark-outline" size={28} color="white" />
+          <View style={styles.saveWrapper}>
+            {isSaved && (
+              <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
+                <Text style={styles.viewSavedText}>View Saved</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
+              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
             </TouchableOpacity>
+          </View>
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />
@@ -141,6 +186,8 @@ const styles = StyleSheet.create({
     height: 400,
   },
   backButton: {
+    height: 40,
+    width: 40,
     position: 'absolute',
     top: 50,
     left: 20,
@@ -150,13 +197,32 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   saveButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
+    height: 40,
+    width: 40,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 6,
     borderRadius: 30,
+  },
+  saveWrapper: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
     zIndex: 10,
+  },
+  viewSavedButton: {
+    height: 40,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  viewSavedText: {
+    color: '#FFF',
+    fontWeight: 'bold',
   },  
   titleContainer: {
     position: 'absolute',
