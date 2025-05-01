@@ -5,6 +5,7 @@ import { db } from '@/firebase/firebaseConfig';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getMoodTags } from '@/utils/moodTagger';
 
 export const unstable_settings = {
   headerShown: false,
@@ -15,69 +16,65 @@ export default function CategoryDrinksScreen() {
   const router = useRouter();
   const [cocktails, setCocktails] = useState<any[]>([]);
   const [categoryImage, setCategoryImage] = useState<string>('');
-  const [categoryName, setCategoryName] = useState<string>(''); // holds real category name like "Coffee / Tea"
+  const [categoryName, setCategoryName] = useState<string>('');
 
-  // First fetch category name + image using the category ID (e.g. "coffeeandtea")
-  const fetchCategoryData = async () => {
-    try {
-      const docRef = doc(db, 'categories', category as string);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setCategoryName(data.name); // use the real name in drink queries
-        setCategoryImage(data.image || '');
-      }
-    } catch (error) {
-      console.error('Error fetching category data:', error);
+  useEffect(() => {
+    if (category) {
+      fetchData();
     }
-  };
+  }, [category]);
 
-  // Then fetch cocktails based on the real category name
-  const fetchCocktails = async () => {
-    if (!categoryName) return;
+  const fetchData = async () => {
+    if (!category) return;
+
     try {
-      const q = query(
-        collection(db, 'cocktails'),
-        where('category', '==', categoryName)
-      );
-      const querySnapshot = await getDocs(q);
-  
-      const drinksWithRatings = await Promise.all(
-        querySnapshot.docs.map(async (docSnap) => {
+      const categoryRef = doc(db, 'categories', category as string);
+      const categorySnap = await getDoc(categoryRef);
+
+      const allCocktailsSnap = await getDocs(collection(db, 'cocktails'));
+
+      const allDrinksWithRatings = await Promise.all(
+        allCocktailsSnap.docs.map(async (docSnap) => {
           const data = docSnap.data();
-          const reviewsSnapshot = await getDocs(collection(db, 'cocktails', docSnap.id, 'reviews'));
-  
+          const reviewsSnap = await getDocs(collection(db, 'cocktails', docSnap.id, 'reviews'));
+
           let avgRating = null;
-          if (!reviewsSnapshot.empty) {
-            const total = reviewsSnapshot.docs.reduce((acc, curr) => acc + (curr.data().rating || 0), 0);
-            avgRating = total / reviewsSnapshot.size;
+          if (!reviewsSnap.empty) {
+            const total = reviewsSnap.docs.reduce((acc, curr) => acc + (curr.data().rating || 0), 0);
+            avgRating = total / reviewsSnap.size;
           }
-  
+
           return {
             id: docSnap.id,
+            category: data.category || '',
             ...data,
             rating: avgRating,
           };
         })
       );
-  
-      setCocktails(drinksWithRatings);
+
+      if (categorySnap.exists()) {
+        // Firestore category path
+        const catData = categorySnap.data();
+        setCategoryName(catData.name);
+        setCategoryImage(catData.image || '');
+
+        const filtered = allDrinksWithRatings.filter(drink => drink.category === catData.name);
+        setCocktails(filtered);
+      } else {
+        // Mood path
+        const moodId = category as string;
+        setCategoryName(formatMoodName(moodId));
+        setCategoryImage(getMoodImage(moodId));
+
+        const filtered = allDrinksWithRatings.filter(drink => getMoodTags(drink).includes(moodId));
+        setCocktails(filtered);
+      }
+
     } catch (error) {
-      console.error('Error fetching cocktails:', error);
+      console.error('Error fetching data:', error);
     }
   };
-
-  useEffect(() => {
-    if (category) {
-      fetchCategoryData(); // this sets categoryName, which triggers fetchCocktails()
-    }
-  }, [category]);
-
-  useEffect(() => {
-    if (categoryName) {
-      fetchCocktails();
-    }
-  }, [categoryName]);
 
   return (
     <View style={styles.container}>
@@ -94,19 +91,16 @@ export default function CategoryDrinksScreen() {
           style={styles.gradientOverlay}
         />
 
-        {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
 
-        {/* Title on Image */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleText}>{categoryName}</Text>
           <Text style={styles.subtitle}>{cocktails.length} Results</Text>
         </View>
       </View>
 
-      {/* Drink List */}
       <FlatList
         data={cocktails}
         keyExtractor={(item) => item.id}
@@ -123,7 +117,7 @@ export default function CategoryDrinksScreen() {
             <View style={styles.info}>
               <Text style={styles.drinkName}>{item.name}</Text>
               <View style={styles.ratingBadge}>
-                  <Text style={styles.ratingText}>{(item.rating ?? 0).toFixed(1)}</Text>
+                <Text style={styles.ratingText}>{(item.rating ?? 0).toFixed(1)}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -132,6 +126,32 @@ export default function CategoryDrinksScreen() {
       />
     </View>
   );
+}
+
+// Helpers for mood names & images
+function formatMoodName(id: string) {
+  const map: Record<string, string> = {
+    party: 'Party',
+    date_night: 'Date Night',
+    chill: 'Chill',
+    summer: 'Summer',
+    winter: 'Winter',
+    brunch: 'Brunch',
+    wedding: 'Wedding',
+  };
+  return map[id] || id;
+}
+
+function getMoodImage(id: string) {
+  const map: Record<string, string> = {
+    party: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fparty.jpg?alt=media&token=ca8e8cb5-ea32-43d9-8756-ec38dde72ac7',
+    date_night: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fdatenight.jpg?alt=media&token=64b56afb-684f-41b2-89cc-b37792637498',
+    chill: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fchill.jpg?alt=media&token=a50dfda9-2680-46df-be37-c0a1e420986c',
+    summer: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fsummer.jpg?alt=media&token=626c0932-2f80-4bd6-aa5f-ccc140404037',
+    winter: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fwinter.jpg?alt=media&token=0603c9b3-9675-40e3-92c8-1a93f9933e40',
+    brunch: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fbrunch.jpg?alt=media&token=59f4cca2-f766-4d67-91de-731c569647cb',
+  };
+  return map[id] || '';
 }
 
 const styles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -48,7 +48,15 @@ export default function ExploreScreen() {
   );
 
   const isSearching = searchQuery.length > 0;
-  const dataToRender = isSearching ? filteredDrinks : categories;
+
+  const moods = [
+    { id: 'party', name: 'Party', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fparty.jpg?alt=media&token=ca8e8cb5-ea32-43d9-8756-ec38dde72ac7' },
+    { id: 'date_night', name: 'Date Night', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fdatenight.jpg?alt=media&token=64b56afb-684f-41b2-89cc-b37792637498' },
+    { id: 'chill', name: 'Chill', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fchill.jpg?alt=media&token=a50dfda9-2680-46df-be37-c0a1e420986c' },
+    { id: 'summer', name: 'Summer', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fsummer.jpg?alt=media&token=626c0932-2f80-4bd6-aa5f-ccc140404037' },
+    { id: 'winter', name: 'Winter', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fwinter.jpg?alt=media&token=0603c9b3-9675-40e3-92c8-1a93f9933e40' },
+    { id: 'brunch', name: 'Brunch', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fbrunch.jpg?alt=media&token=59f4cca2-f766-4d67-91de-731c569647cb' },
+  ];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -70,31 +78,18 @@ export default function ExploreScreen() {
             )}
           </View>
         </View>
+
         {isSearching && (
           <Text style={styles.resultCount}>
             {filteredDrinks.length} result{filteredDrinks.length !== 1 ? 's' : ''}
           </Text>
         )}
 
-        <FlatList
-          data={dataToRender}
-          keyExtractor={(item) => item.id}
-          numColumns={isSearching ? 1 : 2}
-          key={isSearching ? 'drinks' : 'categories'} // 🔥 force remount when numColumns changes
-          columnWrapperStyle={!isSearching ? { justifyContent: 'space-between' } : undefined}
-          contentContainerStyle={{
-            paddingBottom: 50,
-            flexGrow: 1,
-            justifyContent: dataToRender.length === 0 ? 'center' : undefined,
-            alignItems: dataToRender.length === 0 ? 'center' : undefined,
-          }}
-          ListEmptyComponent={isSearching ? (
-            <Text style={{ fontSize: 16, color: 'gray', marginTop: 20 }}>
-              0 drinks found
-            </Text>
-          ) : null}
-          renderItem={({ item }) => (
-            isSearching ? (
+        {isSearching ? (
+          <FlatList
+            data={filteredDrinks}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.drinkCard}
                 onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}
@@ -106,21 +101,53 @@ export default function ExploreScreen() {
                 )}
                 <Text style={styles.drinkText}>{item.name}</Text>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.categoryCard}
-                onPress={() => router.push(`/explore/${item.id}`)}
-              >
-                {item.image ? (
+            )}
+          />
+        ) : (
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <Text style={[styles.header, { fontSize: 24, textAlign: 'left' }]}>Categories</Text>
+            <FlatList
+              data={categories}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
+              contentContainerStyle={{ marginBottom: 30 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.categoryCard}
+                  onPress={() => router.push(`/explore/${item.id}`)}
+                >
+                  {item.image ? (
+                    <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                  ) : (
+                    <View style={styles.categoryPlaceholder} />
+                  )}
+                  <Text style={styles.categoryText}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+
+            <Text style={[styles.header, { fontSize: 24, textAlign: 'left' }]}>Moods & Events</Text>
+            <FlatList
+              data={moods}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
+              contentContainerStyle={{ paddingBottom: 50 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.categoryCard}
+                  onPress={() => router.push(`/explore/${item.id}`)}
+                >
                   <Image source={{ uri: item.image }} style={styles.categoryImage} />
-                ) : (
-                  <View style={styles.categoryPlaceholder} />
-                )}
-                <Text style={styles.categoryText}>{item.name}</Text>
-              </TouchableOpacity>
-            )
-          )}
-        />
+                  <Text style={styles.categoryText}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </ScrollView>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -131,6 +158,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 10,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     fontSize: 32,
@@ -201,7 +231,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
-  categoryPlaceholder: { // ✨ New: placeholder for category boxes
+  categoryPlaceholder: {
     width: '100%',
     height: 120,
     backgroundColor: '#ccc',
