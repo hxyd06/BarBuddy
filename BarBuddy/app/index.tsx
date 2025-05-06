@@ -8,7 +8,7 @@ export default function Index() {
   const { user, authInitialized } = useAuth();
 
   useEffect(() => {
-    if (!authInitialized) return; // ⏳ Wait until auth is ready
+    if (!authInitialized) return;
   
     if (user) {
       router.replace('/(tabs)/home');

@@ -38,6 +38,7 @@ export default function Signup() {
         email,
         createdAt: new Date(),
         savedRecipes: [],
+        onHandIngredients: [], /* Added array for onhand ingredients */
         preferences: {},
       });
       Alert.alert('Account created!', 'You are now logged in.');

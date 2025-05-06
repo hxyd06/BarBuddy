@@ -10,11 +10,13 @@ import { auth } from '@/firebase/firebaseConfig';
 export default function DrinkDetailScreen() {
   const { drink } = useLocalSearchParams();
   const router = useRouter();
+
   const [drinkData, setDrinkData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [aiDescription, setAiDescription] = useState<string>('');
   const [isSaved, setIsSaved] = useState(false);
   const [averageRating, setAverageRating] = useState<number>(0);
+  const [hasBadIngredient, setHasBadIngredient] = useState(false);
 
   useEffect(() => {
     if (drink) {
@@ -31,7 +33,7 @@ export default function DrinkDetailScreen() {
         const cocktail = data.drinks[0];
         setDrinkData(cocktail);
 
-        // Fetch and calculate average rating
+        //Fetch and calculate average rating
         const reviewsRef = collection(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''), 'reviews');
         const reviewSnap = await getDocs(reviewsRef);
         if (!reviewSnap.empty) {
@@ -55,7 +57,6 @@ export default function DrinkDetailScreen() {
           setAiDescription(existingData.description);
         } else {
           const prompt = `Write a short, fun 2-sentence description for a cocktail called "${cocktail.strDrink}".`;
-
           const result = await model.generateContent(prompt);
           const description = result.response.text().trim();
 
@@ -106,6 +107,43 @@ export default function DrinkDetailScreen() {
     }
   };
 
+  //Match ingredients to user preferences
+  useEffect(() => {
+    const checkIngredients = async () => {
+      if (!drinkData || !auth.currentUser) return;
+
+      try {
+        const userSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        const preferences = userSnap.data()?.preferences || {};
+        const requiredPrefs = Object.entries(preferences)
+          .filter(([_, val]) => val === true)
+          .map(([key]) => key);
+
+        const ingredients = Array.from({ length: 15 }, (_, i) => drinkData[`strIngredient${i + 1}`])
+          .filter(Boolean)
+          .map((ing) => ing.trim().toLowerCase());
+
+        for (const ingName of ingredients) {
+          const ingSnap = await getDoc(doc(db, 'ingredients_master', ingName));
+          const ingPrefsStr = ingSnap.data()?.preferences || '';
+          const ingPrefs = ingPrefsStr.split(' ');
+          const matchesAll = requiredPrefs.every((pref) => ingPrefs.includes(pref));
+          if (!matchesAll) {
+            setHasBadIngredient(true); //If has bad ingredient
+            return;
+          }
+        }
+
+        setHasBadIngredient(false); //No bad ingredient
+      } catch (error) {
+        console.error('Error checking ingredient preferences:', error);
+        setHasBadIngredient(false);
+      }
+    };
+
+    checkIngredients(); //Checks ingredients per preferences
+  }, [drinkData]);
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -126,20 +164,20 @@ export default function DrinkDetailScreen() {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={28} color="white" />
-          </TouchableOpacity>
-          <View style={styles.saveWrapper}>
-            {isSaved && (
-              <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
-                <Text style={styles.viewSavedText}>View Saved</Text>
-              </TouchableOpacity>
-            )}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="white" />
+        </TouchableOpacity>
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
-              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
+        <View style={styles.saveWrapper}>
+          {isSaved && (
+            <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
+              <Text style={styles.viewSavedText}>View Saved</Text>
             </TouchableOpacity>
-          </View>   
+          )}
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
+            <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
+          </TouchableOpacity>
+        </View>
 
         <View>
           {drinkData.strDrinkThumb ? (
@@ -156,14 +194,21 @@ export default function DrinkDetailScreen() {
           </View>
         </View>
 
-        
         {aiDescription && (
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>{aiDescription}</Text>
           </View>
         )}
 
-       
+        {/* Display a warning if bad ingredient */}
+        {hasBadIngredient && (
+          <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <Text style={{ color: 'red', fontWeight: 'bold' }}>
+              This drink may contain ingredients that don't match your preferences.
+            </Text>
+          </View>
+        )}
+
         <View style={styles.content}>
           <Text style={styles.heading}>Ingredients</Text>
           {Array.from({ length: 15 }, (_, i) => i + 1)
@@ -195,20 +240,9 @@ export default function DrinkDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  headerImage: {
-    width: '100%',
-    height: 400,
-    resizeMode: 'cover',
-  },
-  gradientOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: 400,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  headerImage: { width: '100%', height: 400, resizeMode: 'cover' },
+  gradientOverlay: { position: 'absolute', width: '100%', height: 400 },
   backButton: {
     height: 40,
     width: 40,
@@ -244,53 +278,22 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  viewSavedText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-  },  
+  viewSavedText: { color: '#FFF', fontWeight: 'bold' },
   titleContainer: {
     position: 'absolute',
     bottom: 10,
     left: 20,
     flexDirection: 'row',
     alignItems: 'center',
-  },  
-  titleText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
   },
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  descriptionBox: {
-    paddingHorizontal: 16,
-    paddingTop: 30,
-  },
-  descriptionText: {
-    fontStyle: 'italic',
-    fontSize: 16,
-  },
-  reviewsSection: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
+  titleText: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
+  content: { paddingHorizontal: 16, paddingTop: 20 },
+  heading: { fontSize: 20, fontWeight: '600', marginTop: 20, marginBottom: 10 },
+  text: { fontSize: 16, marginBottom: 6 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  descriptionBox: { paddingHorizontal: 16, paddingTop: 30 },
+  descriptionText: { fontStyle: 'italic', fontSize: 16 },
+  reviewsSection: { alignItems: 'center', marginTop: 30 },
   reviewButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -299,11 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  reviewButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  reviewButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   ratingBadge: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 18,
@@ -313,9 +312,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 16,
   },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
-  },  
+  ratingText: { fontSize: 14, fontWeight: 'bold', color: '#fff' },
 });
