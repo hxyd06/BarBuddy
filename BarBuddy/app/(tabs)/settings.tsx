@@ -86,7 +86,7 @@ export default function SettingsScreen() {
     try {
       await signOut(auth);
       setTimeout(() => {
-        router.replace('/');
+        router.replace('../home.tsx');
       }, 500);
     } catch (error) {
       console.error('Logout error:', error);
@@ -142,22 +142,32 @@ export default function SettingsScreen() {
         )}
       </View>
 
+        {/* On Hand Ingredients Button */}
       <View style={styles.listSection}>
-        <TouchableOpacity style={styles.listItem} onPress={() => alert('test')}>
+        <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/onhand')}>
           <Ionicons name="list" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>On-Hand Ingredients</Text>
         </TouchableOpacity>
 
+        {/* Saved Drinks Button */}
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/saved')}>
           <Ionicons name="bookmark" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>Saved Drinks</Text>
         </TouchableOpacity>
 
+        {/* Reviews Button */}
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/reviews')}>
           <Ionicons name="chatbubble-ellipses" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>View Your Reviews</Text>
         </TouchableOpacity>
 
+        {/* Edit Preferences Button */}
+        <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/preferences')}>
+          <Ionicons name="person-circle" size={28} color="#5c5c99" style={styles.listIcon}/>
+          <Text style={styles.listLabel}>Edit Preferences</Text>
+        </TouchableOpacity>
+
+        {/* Dark Mode Button */}
         <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
           <Ionicons
             name={isDarkMode ? 'moon' : 'sunny'}
@@ -178,6 +188,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
+  {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
@@ -185,6 +196,7 @@ export default function SettingsScreen() {
   );
 }
 
+//Stylesheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,

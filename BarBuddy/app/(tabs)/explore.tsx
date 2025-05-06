@@ -106,6 +106,13 @@ export default function ExploreScreen() {
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <Text style={[styles.header, { fontSize: 24, textAlign: 'left' }]}>Categories</Text>
+            <View>
+              {/* Button to available drinks page */}
+      <TouchableOpacity style={styles.availableDrinksButton} onPress={() => router.push('../settings/available-drinks')}>
+        <Image source={ require('../../assets/images/drinksicanmake.webp')} style={styles.categoryImage}/>
+      </TouchableOpacity>
+      <Text style={styles.availableDrinksText}>Drinks I Can Make</Text>
+      </View>
             <FlatList
               data={categories}
               keyExtractor={(item) => item.id}
@@ -189,6 +196,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
+  availableDrinksButton: {
+    width: '96%',
+    marginBottom: 0,
+    alignItems: 'center',
+  },
   categoryCard: {
     width: '48%',
     marginBottom: 15,
@@ -203,6 +215,11 @@ const styles = StyleSheet.create({
   categoryText: {
     fontWeight: '500',
     textAlign: 'center',
+  },
+  availableDrinksText: {
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 15,
   },
   drinkCard: {
     flexDirection: 'row',

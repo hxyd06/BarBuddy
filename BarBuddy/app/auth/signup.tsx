@@ -18,6 +18,7 @@ export default function Signup() {
         email,
         createdAt: new Date(),
         savedRecipes: [],
+        onHandIngredients: [], /* Added array for onhand ingredients */
         preferences: {},
       });
   
