@@ -5,6 +5,7 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Login() {
     const router = useRouter();
@@ -29,12 +30,19 @@ export default function Login() {
 
     const signIn = async () => {
         try {
-        await signInWithEmailAndPassword(auth, email, password);
-        router.replace('/(tabs)/home');
+          await signInWithEmailAndPassword(auth, email, password);
+      
+          // Wait for Firebase to confirm user is signed in
+          const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+              unsubscribe(); // Stop listening once user is confirmed
+              router.replace('/(tabs)/home');
+            }
+          });
         } catch (error: any) {
-        Alert.alert('Login Error', error.message);
+          Alert.alert('Login Error', error.message);
         }
-    };
+      };
 
     return (
         <View style={styles.container}>

@@ -78,7 +78,7 @@ export default function AvailableDrinksScreen() {
         for (const docSnap of cocktailsSnapshot.docs) {
           const cocktail = docSnap.data();
           if (!cocktail.ingredients) {
-            console.error('No ingredients found for cocktail:', cocktail.name);
+            console.error('No ingredients found for cocktail: ', cocktail.name);
             continue;
           }
           const ingredientsMap = cocktail.ingredients;
@@ -119,6 +119,7 @@ export default function AvailableDrinksScreen() {
       <TouchableOpacity onPress={() => router.back()} style={{ padding: 16 }}>
         <Ionicons name="arrow-back" size={24} color="#5c5c99" />
       </TouchableOpacity>
+      <Text style={styles.emptyText}>Below are the drinks you have ALL of the ingredients to make.</Text>
 
       {/* Available Drink List */}
       {loading ? (
@@ -172,5 +173,5 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   drinkName: { fontWeight: 'bold', fontSize: 16 },
-  emptyText: { textAlign: 'center', marginTop: 30, color: '#888' },
+  emptyText: { textAlign: 'center', color: '#888' },
 });

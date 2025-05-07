@@ -75,33 +75,29 @@ const handleRemoveIngredient = async (ingredientToRemove: string) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
-        <TouchableOpacity onPress={() => router.push('/settings/available-drinks')}>
-        <Text style={styles.button}>View Drinks I Can Make</Text>
-        </TouchableOpacity>
-
-      {/* User onhand ingredient list */}
-      {loading ? (
-        <Text style={styles.emptyText}>Loading...</Text>
-      ) : ingredients.length === 0 ? (
-        <Text style={styles.emptyText}>No ingredients added yet.</Text>
-      ) : (
-        <FlatList
-          contentContainerStyle={{ padding: 20 }}
-          data={ingredients}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.cardRow}>
-              <Text style={styles.drinkName}>{item}</Text>
-              {/* Remove Ingredient Button */}
-              <TouchableOpacity onPress={() => handleRemoveIngredient(item)}>
-                <Ionicons name="trash" size={20} color="#e63946" />
-              </TouchableOpacity>
-            </View>
-          )}                    
-        />
-      )}
-      </ScrollView>
+      <FlatList
+  contentContainerStyle={{ padding: 20 }}
+  data={loading ? [] : ingredients}
+  keyExtractor={(item, index) => index.toString()}
+  renderItem={({ item }) => (
+    <View style={styles.cardRow}>
+      <Text style={styles.drinkName}>{item}</Text>
+      <TouchableOpacity onPress={() => handleRemoveIngredient(item)}>
+        <Ionicons name="trash" size={20} color="#e63946" />
+      </TouchableOpacity>
+    </View>
+  )}
+  ListHeaderComponent={
+    <TouchableOpacity onPress={() => router.push('/settings/available-drinks')}>
+      <Text style={styles.button}>View Drinks I Can Make</Text>
+    </TouchableOpacity>
+  }
+  ListEmptyComponent={
+    <Text style={styles.emptyText}>
+      {loading ? 'Loading...' : 'No ingredients added yet.'}
+    </Text>
+  }
+/>
     </View>
   );
 }
@@ -111,8 +107,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   button: {
     backgroundColor: '#5c5c99',
-    padding: 32,
-    margin: 12,
+    padding: 24,
     borderRadius: 10,
     marginBottom: 12,
     fontWeight: 'bold',
