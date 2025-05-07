@@ -167,7 +167,7 @@ export default function SettingsScreen() {
           <Text style={styles.listLabel}>Edit Preferences</Text>
         </TouchableOpacity>
 
-        {/* Dark Mode Button */}
+        {/* Dark Mode Button (Sprint Two Goal)
         <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
           <Ionicons
             name={isDarkMode ? 'moon' : 'sunny'}
@@ -186,6 +186,7 @@ export default function SettingsScreen() {
             style={{ marginLeft: 'auto' }}
           />
         </TouchableOpacity>
+        */}
       </View>
 
   {/* Logout Button */}
