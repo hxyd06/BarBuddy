@@ -1,4 +1,5 @@
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -28,7 +29,7 @@ export default function UserReviewsScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
@@ -40,16 +41,19 @@ export default function UserReviewsScreen() {
         data={reviews}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}`)}
+          >
             <Text style={styles.drinkName}>{item.drinkName}</Text>
             <Text style={styles.rating}>Rating: {item.rating}/5</Text>
             <Text style={styles.comment}>{item.comment}</Text>
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>No reviews found.</Text>}
         contentContainerStyle={{ padding: 20 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -57,22 +61,46 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   header: {
     backgroundColor: '#5c5c99',
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  backButton: { marginRight: 10 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
+
+  backButton: { 
+    marginRight: 10 
+  },
+
+  title: { 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+
   card: {
     backgroundColor: '#f5f5fc',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
   },
-  drinkName: { fontWeight: 'bold', fontSize: 16 },
-  rating: { marginTop: 4 },
-  comment: { marginTop: 6, color: '#555' },
-  emptyText: { textAlign: 'center', marginTop: 30, color: '#888' },
+
+  drinkName: { 
+    fontWeight: 'bold', 
+    fontSize: 16 
+  },
+  rating: { 
+    marginTop: 4 
+  },
+
+  comment: { 
+    marginTop: 6, 
+    color: '#555' 
+  },
+
+  emptyText: { 
+    textAlign: 'center', 
+    marginTop: 30, 
+    color: '#888' 
+  },
 });

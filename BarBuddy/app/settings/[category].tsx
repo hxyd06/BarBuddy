@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebaseConfig'; 
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 //Category page for add ingredients
 export default function CategoryPage() {
@@ -59,16 +60,14 @@ export default function CategoryPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{category}</Text> {/* Header */}
-        </View>
-        <View>
-            {/* Add Ingredient Button */}
-              <TouchableOpacity onPress={() => router.push('/settings/add-ingredient')} style={{ padding: 16 }}>
-              <Ionicons name="arrow-back" size={24} color="#5c5c99" />
-              </TouchableOpacity>
-            </View>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.title}>{category}</Text>
+      </View>
+
       {loading ? (
         <Text style={styles.loadingText}>Loading...</Text>
       ) : ( /* Set loading text */
@@ -85,7 +84,7 @@ export default function CategoryPage() {
           )}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -97,9 +96,19 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#5c5c99',
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 15,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   loadingText: {
     textAlign: 'center',
@@ -126,5 +135,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     flexShrink: 1,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
 });

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 //Create interfaces for ingredients and cocktail objects
 interface Ingredient {
@@ -109,16 +110,14 @@ export default function AvailableDrinksScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
         <Text style={styles.title}>Available Drinks</Text>
       </View>
-
-      {/* Back Button */}
-      <TouchableOpacity onPress={() => router.back()} style={{ padding: 16 }}>
-        <Ionicons name="arrow-back" size={24} color="#5c5c99" />
-      </TouchableOpacity>
 
       {/* Available Drink List */}
       {loading ? (
@@ -148,29 +147,45 @@ export default function AvailableDrinksScreen() {
           )}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 //Stylesheet
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
   header: {
     backgroundColor: '#5c5c99',
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
+  backButton: {
+    marginRight: 15,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
   card: {
     backgroundColor: '#f5f5fc',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
   },
-  drinkName: { fontWeight: 'bold', fontSize: 16 },
-  emptyText: { textAlign: 'center', marginTop: 30, color: '#888' },
+  drinkName: { 
+    fontWeight: 'bold', 
+    fontSize: 16 
+  },
+  emptyText: { 
+    textAlign: 'center', 
+    marginTop: 30, 
+    color: '#888' 
+  },
 });

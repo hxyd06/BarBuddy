@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const router = useRouter();
 //Define category names as in database
@@ -39,14 +40,12 @@ const categories = [
 //Add ingredient screen
 export default function addIngredientScreen() {
   return (
-    <View style={styles.container}>
-      <View style={styles.header}> {/* Header */}
-        <Text style={styles.title}>Add an ingredient</Text>
-      </View>
-      <View>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 16 }}>
-        <Ionicons name="arrow-back" size={24} color="#5c5c99" /> {/* Back Button */}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
         </TouchableOpacity>
+        <Text style={styles.title}>Add an ingredient</Text>
       </View>
       {/* List of ingredient categories */}
       <FlatList
@@ -68,7 +67,7 @@ export default function addIngredientScreen() {
           </TouchableOpacity>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -77,10 +76,20 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     header: {
       backgroundColor: '#5c5c99',
-      paddingTop: 60,
+      paddingTop: 20,
       paddingBottom: 20,
       paddingHorizontal: 20,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
+    backButton: {
+      marginRight: 15,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#fff',
+    },      
     image: {
         width: '100%',
         height: 120,
@@ -88,7 +97,6 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         resizeMode: 'cover',
       },      
-    title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
     categoryCard: {
       width: '48%',
       marginBottom: 20,
