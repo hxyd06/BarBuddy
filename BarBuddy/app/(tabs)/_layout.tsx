@@ -28,9 +28,6 @@ export default function TabLayout() {
           elevation: 0,
           shadowOpacity: 0,
         },
-        tabBarItemStyle: {
-          paddingVertical: 4,
-        },
         tabBarLabelStyle: {
           fontSize: 10,
         },

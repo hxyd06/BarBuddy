@@ -84,9 +84,11 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     try {
+      console.log('User before logout:', auth.currentUser); // should show a user
       await signOut(auth);
+      console.log('User after logout:', auth.currentUser); // should be null
       setTimeout(() => {
-        router.replace('../home.tsx');
+        router.replace('../auth/login');
       }, 500);
     } catch (error) {
       console.error('Logout error:', error);
