@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_KEY = '12efb7805ad9018a5a8f1414046bad4e41052dc5662e9516e113f277044f0f6f';
+const API_KEY = '06ae564d97cb28b2b0a7d3af98e9fc5c629cea2eceb8160062ba32415406c1e3';
 const GRID = {
     numColumns: 3,
     itemWidth: (Dimensions.get('window').width - 65) / 3,
