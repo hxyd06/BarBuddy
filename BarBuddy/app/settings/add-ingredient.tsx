@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
-
-const router = useRouter();
 //Define category names as in database
 const categories = [
     'Beer/Cider',
@@ -38,6 +36,7 @@ const categories = [
 
 //Add ingredient screen
 export default function addIngredientScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <View style={styles.header}> {/* Header */}
