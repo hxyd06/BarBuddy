@@ -15,7 +15,16 @@
         "light": "./assets/icons/ios-light.png",
         "tinted": "./assets/icons/ios-tinted.png"
       },
-      "bundleIdentifier": "com.hxyd06.BarBuddy"
+      "bundleIdentifier": "com.hxyd06.BarBuddy",
+      "config": {
+        "googleMapsApiKey": "AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
+        "NSLocationAlwaysUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
+        "UIBackgroundModes": ["location"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +32,18 @@
         "monochromeImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.hxyd06.BarBuddy"
+      "package": "com.hxyd06.BarBuddy",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko"
+        }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -43,6 +63,14 @@
             "image": "./assets/icons/splash-icon-dark.png",
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
+          "locationAlwaysPermission": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
+          "locationWhenInUsePermission": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you."
         }
       ]
     ],
