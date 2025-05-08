@@ -75,7 +75,7 @@ export default function MapScreen() {
   // Fetch nearby bars, restaurants and liquor stores
   const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
     try {
-      const apiKey = ''; // Add your Google API key here
+      const apiKey = 'AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko'; // Add your Google API key here
       
       if (Platform.OS === 'web') {
         // For web, use a CORS proxy or your own backend
