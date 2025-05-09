@@ -75,7 +75,7 @@ export default function DrinkDetailScreen() {
         setDrinkData(null);
       }
     } catch (error) {
-      console.error('Error fetching drink details:', error);
+      console.log('Error fetching drink details:');
     } finally {
       setLoading(false);
     }
