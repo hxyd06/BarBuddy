@@ -348,21 +348,21 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
 
           {/* Selected place info */}
           {selectedPlace && (
-            <View style={[styles.placeDetails, { backgroundColor: colors.background }]}>
+            <View style={styles.placeDetails}>
               <TouchableOpacity 
                 style={styles.closeButton} 
                 onPress={() => setSelectedPlace(null)}
               >
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={24} color="#5c5c99" />
               </TouchableOpacity>
               
               <ScrollView style={styles.detailsScrollView}>
-                <Text style={[styles.placeName, { color: colors.text }]}>{selectedPlace.name}</Text>
-                <Text style={[styles.placeAddress, { color: colors.text }]}>{selectedPlace.vicinity}</Text>
+                <Text style={styles.placeName}>{selectedPlace.name}</Text>
+                <Text style={styles.placeAddress}>{selectedPlace.vicinity}</Text>
                 
                 <View style={styles.placeMetaContainer}>
                   <View style={styles.placeTypeContainer}>
-                    <Ionicons name={getPlaceIcon(selectedPlace.types)} size={16} color={colors.tint} />
+                    <Ionicons name={getPlaceIcon(selectedPlace.types)} size={16} color={'white'} />
                     <Text style={[styles.placeTypeText, { color: colors.text }]}>
                       {selectedPlace.types.includes('bar') ? 'Bar' : 
                        selectedPlace.types.includes('restaurant') ? 'Restaurant' : 
@@ -377,7 +377,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
                       <View style={[styles.statusDot, { 
                         backgroundColor: selectedPlace.open_now ? '#4CAF50' : '#F44336' 
                       }]} />
-                      <Text style={[styles.openStatusText, { color: colors.text }]}>
+                      <Text style={styles.openStatusText}>
                         {selectedPlace.open_now ? 'Open Now' : 'Closed'}
                       </Text>
                     </View>
@@ -385,7 +385,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
                 </View>
                 
                 <TouchableOpacity 
-                  style={[styles.directionsButton, { backgroundColor: colors.tint }]}
+                  style={styles.directionsButton}
                   onPress={() => openDirections(selectedPlace)}
                 >
                   <Ionicons name="navigate" size={18} color="white" />
@@ -589,6 +589,8 @@ const styles = StyleSheet.create({
   },
   placeDetails: {
     position: 'absolute',
+    backgroundColor: '#fff',
+    paddingBottom: 60,
     bottom: 0,
     left: 0,
     right: 0,
@@ -612,12 +614,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   placeName: {
+    color: '#5c5c99',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 5,
     marginTop: 10,
   },
   placeAddress: {
+    color: '#5c5c99',
     fontSize: 16,
     marginBottom: 15,
     opacity: 0.7,
@@ -631,7 +635,7 @@ const styles = StyleSheet.create({
   placeTypeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: '#5c5c99',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
@@ -639,6 +643,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   placeTypeText: {
+    color: '#fff',
     marginLeft: 5,
     fontSize: 14,
   },
@@ -665,9 +670,11 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   openStatusText: {
+    color:'#5c5c99',
     fontSize: 14,
   },
   directionsButton: {
+    backgroundColor: '#5c5c99',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

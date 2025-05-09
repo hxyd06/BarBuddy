@@ -49,7 +49,7 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>BarBuddy</Text>
-
+      <Text style={styles.subtitle}>Your pocket mixologist</Text>
       <TextInput
         placeholder="Email"
         value={email}
@@ -92,7 +92,13 @@ const styles = StyleSheet.create({
     color: '#5c5c99',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 40
+    marginBottom: 0,
+  },
+  subtitle: { 
+    color: '#5c5c99', 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginBottom: 30,
   },
   input: {
     backgroundColor: '#f5f5fc',
