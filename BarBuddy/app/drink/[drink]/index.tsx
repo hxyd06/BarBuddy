@@ -107,16 +107,34 @@ export default function DrinkDetailScreen() {
     }
   };
 
+  //share drinks
   const handleShareDrink = async () => { 
+    // if no drink data, return empty
     if (!drinkData) return;
     try {
+      // format the ingredients and measurements for readability
+      const formattedIngredients = Array.from({ length: 15 }, (_, i) => ({
+        ingredient: drinkData[`strIngredient${i + 1}`],
+        measure: drinkData[`strMeasure${i + 1}`],
+      }))
+      .filter((item) => item.ingredient)
+      .map((item) => `• ${item.measure || ''} ${item.ingredient}`)
+      .join('\n');
+      // format the share message
+      const shareMessage = `Here's a recipe from BarBuddy!\n\n`+
+                          `🍹 ${drinkData.strDrink} 🍹\n\n` +
+                          `${aiDescription ? aiDescription + '\n\n' : ''}` +
+                          `Ingredients:\n${formattedIngredients}\n\n` +
+                          `Instructions:\n${drinkData.strInstructions}`;
+      
+      //share the message                    
       await Share.share({
-        message: `This is a share message for a drink recipe}".`,
+        message: shareMessage,
       });
     } catch (error) {
       console.error('Error sharing drink:', error);
     }
-  }
+  };
 
   //Match ingredients to user preferences
   useEffect(() => {
