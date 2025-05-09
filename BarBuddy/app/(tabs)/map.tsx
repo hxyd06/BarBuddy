@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { locationService } from '../../utils/locationService';
+import { LinearGradient } from 'expo-linear-gradient';
+
 // Types for our place data
 interface Place {
   id: string;
@@ -284,6 +286,23 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Bars near you</Text>
+      </View>
+
+      <LinearGradient
+        colors={[
+          'rgba(0, 0, 0, 0.35)',
+          'rgba(0, 0, 0, 0.25)',
+          'rgba(0, 0, 0, 0.15)',
+          'rgba(0, 0, 0, 0.05)',
+          'rgba(0, 0, 0, 0)',
+        ]}
+        style={styles.headerShadow}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+
       {location && (
         <>
           <MapView
@@ -312,7 +331,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
                 description={place.vicinity}
                 onPress={() => setSelectedPlace(place)}
               >
-                <View style={[styles.markerContainer, { backgroundColor: colors.tint }]}>
+                <View style={styles.markerContainer}>
                   <Ionicons name={getPlaceIcon(place.types)} size={16} color="white" />
                 </View>
               </Marker>
@@ -321,10 +340,10 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
 
           {/* My Location Button */}
           <TouchableOpacity 
-            style={[styles.myLocationButton, { backgroundColor: colors.background }]} 
+            style={[styles.myLocationButton]} 
             onPress={goToMyLocation}
           >
-            <Ionicons name="locate" size={24} color={colors.tint} />
+            <Ionicons name="locate" size={24} color="#5c5c99" />
           </TouchableOpacity>
 
           {/* Selected place info */}
@@ -509,8 +528,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    ...StyleSheet.absoluteFillObject,
+  },
+  header: {
+    backgroundColor: '#5c5c99',
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+  },
+  headerText: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  headerShadow: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 100 : 80,
+    left: 0,
+    right: 0,
+    height: 20,
+    zIndex: 998,
   },
   text: {
     fontSize: 16,
@@ -529,13 +573,14 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: 'absolute',
-    right: 16,
-    bottom: 160,
+    right: 20,
+    bottom: 80,
     width: 50,
     height: 50,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -640,5 +685,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'white',
+    backgroundColor: '#5c5c99',
   },
 });

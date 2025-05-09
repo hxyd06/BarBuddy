@@ -106,7 +106,7 @@ export default function ExploreScreen() {
                 Welcome, {username}
               </Text>
             )}
-            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#5c5c9a', textAlign: 'center' }}>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#5c5c9a', textAlign: 'center' }}>
               Explore drinks
             </Text>
           </View>

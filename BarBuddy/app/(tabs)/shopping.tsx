@@ -217,15 +217,15 @@ export default function ShoppingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 60,
         paddingHorizontal: 20,
         backgroundColor: '#fff',
     },
     pageTitle: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#5c5c99',
-        marginBottom: 20,
+        paddingTop: 40,
+        paddingBottom: 10,
         textAlign: 'center',
     },
     searchContainer: {
