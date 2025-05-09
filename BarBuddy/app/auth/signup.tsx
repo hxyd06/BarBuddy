@@ -12,11 +12,13 @@ export default function Signup() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Handle signup form submission
   const handleSignUp = async () => {
     let hasError = false;
     setEmailError('');
     setPasswordError('');
 
+    // Basic validation
     if (!email) {
       setEmailError('Email is required.');
       hasError = true;
@@ -32,13 +34,14 @@ export default function Signup() {
 
     if (hasError) return;
 
+    // Create Firebase user and save to Firestore
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, 'users', cred.user.uid), {
         email,
         createdAt: new Date(),
         savedRecipes: [],
-        onHandIngredients: [], /* Added array for onhand ingredients */
+        onHandIngredients: [],
         preferences: {},
       });
       Alert.alert('Account created!', 'You are now logged in.');
@@ -48,14 +51,15 @@ export default function Signup() {
     }
   };
 
+  // Render signup form
   return (
     <View style={styles.container}>
       <View style={styles.centerBlock}>
-        {/* Top text */}
+        {/* Header */}
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.text}>Please enter a valid email and a password with at least 6 characters.</Text>
 
-        {/* Inputs */}
+        {/* Email Input */}
         <TextInput
           placeholder="Email"
           value={email}
@@ -65,6 +69,7 @@ export default function Signup() {
         />
         {emailError !== '' && <Text style={styles.errorText}>{emailError}</Text>}
 
+        {/* Password Input */}
         <TextInput
           placeholder="Password"
           value={password}
@@ -74,9 +79,10 @@ export default function Signup() {
         />
         {passwordError !== '' && <Text style={styles.errorText}>{passwordError}</Text>}
 
-        {/* Buttons */}
+        {/* Submit Button */}
         <Button title="Sign Up" onPress={handleSignUp} />
 
+        {/* Link to login screen */}
         <TouchableOpacity onPress={() => router.push('/auth/login')}>
           <Text style={styles.link}>Already have an account? Log in</Text>
         </TouchableOpacity>
@@ -85,6 +91,7 @@ export default function Signup() {
   );
 }
 
+// Styles for signup screen:
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 

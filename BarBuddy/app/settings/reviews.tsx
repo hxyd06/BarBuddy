@@ -6,10 +6,12 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 
+// Screen to display all reviews submitted by the current user
 export default function UserReviewsScreen() {
   const [reviews, setReviews] = useState<any[]>([]);
   const router = useRouter();
 
+  // Fetch user's reviews on mount
   useEffect(() => {
     const fetchUserReviews = async () => {
       const user = auth.currentUser;
@@ -28,8 +30,10 @@ export default function UserReviewsScreen() {
     fetchUserReviews();
   }, []);
 
+  // Render list of user's reviews
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with back button */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
@@ -37,6 +41,7 @@ export default function UserReviewsScreen() {
         <Text style={styles.title}>Your Reviews</Text>
       </View>
 
+      {/* Reviews list or empty fallback */}
       <FlatList
         data={reviews}
         keyExtractor={(item) => item.id}
@@ -57,6 +62,7 @@ export default function UserReviewsScreen() {
   );
 }
 
+// Styles for saved reviews screen: 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   header: {

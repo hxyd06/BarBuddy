@@ -7,10 +7,12 @@ import { model, db } from '@/firebase/firebaseConfig';
 import { doc, getDoc, setDoc, deleteDoc, getDocs, collection } from 'firebase/firestore';
 import { auth } from '@/firebase/firebaseConfig';
 
+// Drink detail screen component
 export default function DrinkDetailScreen() {
   const { drink } = useLocalSearchParams();
   const router = useRouter();
 
+  // Local state
   const [drinkData, setDrinkData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [aiDescription, setAiDescription] = useState<string>('');
@@ -18,12 +20,14 @@ export default function DrinkDetailScreen() {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [hasBadIngredient, setHasBadIngredient] = useState(false);
 
+  // Fetch drink data and metadata
   useEffect(() => {
     if (drink) {
       fetchDrinkDetails(decodeURIComponent(drink as string));
     }
   }, [drink]);
 
+  // Retrieve drink details, reviews, and AI description
   const fetchDrinkDetails = async (drinkName: string) => {
     try {
       const response = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${drinkName}`);
@@ -33,22 +37,22 @@ export default function DrinkDetailScreen() {
         const cocktail = data.drinks[0];
         setDrinkData(cocktail);
 
-        //Fetch and calculate average rating
+        // Fetch average rating from reviews subcollection
         const reviewsRef = collection(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''), 'reviews');
         const reviewSnap = await getDocs(reviewsRef);
         if (!reviewSnap.empty) {
           const total = reviewSnap.docs.reduce((sum, doc) => sum + (doc.data().rating || 0), 0);
           setAverageRating(total / reviewSnap.size);
-        } else {
-          setAverageRating(0);
         }
 
+        // Check if drink is saved
         if (auth.currentUser) {
           const savedRef = doc(db, 'users', auth.currentUser.uid, 'savedRecipes', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
           const savedSnap = await getDoc(savedRef);
           setIsSaved(savedSnap.exists());
         }
 
+        // Get or generate AI description
         const drinkDocRef = doc(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
         const drinkSnap = await getDoc(drinkDocRef);
         const existingData = drinkSnap.exists() ? drinkSnap.data() : {};
@@ -71,12 +75,13 @@ export default function DrinkDetailScreen() {
         setDrinkData(null);
       }
     } catch (error) {
-      
+      console.error('Error fetching drink details:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Save or unsave drink to user's saved recipes
   const handleSaveDrink = async () => {
     const user = auth.currentUser;
     if (!user || !drinkData) return;
@@ -107,7 +112,7 @@ export default function DrinkDetailScreen() {
     }
   };
 
-  //Match ingredients to user preferences
+  // Check ingredients against user preferences
   useEffect(() => {
     const checkIngredients = async () => {
       if (!drinkData || !auth.currentUser) return;
@@ -129,21 +134,22 @@ export default function DrinkDetailScreen() {
           const ingPrefs = ingPrefsStr.split(' ');
           const matchesAll = requiredPrefs.every((pref) => ingPrefs.includes(pref));
           if (!matchesAll) {
-            setHasBadIngredient(true); //If has bad ingredient
+            setHasBadIngredient(true);
             return;
           }
         }
 
-        setHasBadIngredient(false); //No bad ingredient
+        setHasBadIngredient(false);
       } catch (error) {
         console.error('Error checking ingredient preferences:', error);
         setHasBadIngredient(false);
       }
     };
 
-    checkIngredients(); //Checks ingredients per preferences
+    checkIngredients();
   }, [drinkData]);
 
+  // Show loading spinner
   if (loading) {
     return (
       <View style={styles.center}>
@@ -152,6 +158,7 @@ export default function DrinkDetailScreen() {
     );
   }
 
+  // Show fallback message if drink not found
   if (!drinkData) {
     return (
       <View style={styles.center}>
@@ -160,14 +167,20 @@ export default function DrinkDetailScreen() {
     );
   }
 
+  // Render drink details
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+
+      {/* Scrollable content */}
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+
+        {/* Back button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
 
+        {/* Save/View saved buttons */}
         <View style={styles.saveWrapper}>
           {isSaved && (
             <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
@@ -179,6 +192,7 @@ export default function DrinkDetailScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Drink image and title */}
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />
@@ -194,13 +208,14 @@ export default function DrinkDetailScreen() {
           </View>
         </View>
 
+        {/* AI-generated description */}
         {aiDescription && (
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>{aiDescription}</Text>
           </View>
         )}
 
-        {/* Display a warning if bad ingredient */}
+        {/* Ingredient preference warning */}
         {hasBadIngredient && (
           <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
             <Text style={{ color: 'red', fontWeight: 'bold' }}>
@@ -209,6 +224,7 @@ export default function DrinkDetailScreen() {
           </View>
         )}
 
+        {/* Ingredients and instructions */}
         <View style={styles.content}>
           <Text style={styles.heading}>Ingredients</Text>
           {Array.from({ length: 15 }, (_, i) => i + 1)
@@ -227,6 +243,7 @@ export default function DrinkDetailScreen() {
           <Text style={styles.text}>{drinkData.strInstructions}</Text>
         </View>
 
+        {/* Navigate to reviews */}
         <View style={styles.reviewsSection}>
           <TouchableOpacity
             style={styles.reviewButton}
@@ -239,10 +256,22 @@ export default function DrinkDetailScreen() {
   );
 }
 
+// Styling for drinks detail screen:
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  headerImage: { width: '100%', height: 400, resizeMode: 'cover' },
-  gradientOverlay: { position: 'absolute', width: '100%', height: 400 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
+  headerImage: { 
+    width: '100%', 
+    height: 400, 
+    resizeMode: 'cover' 
+  },
+  gradientOverlay: { 
+    position: 'absolute', 
+    width: '100%', 
+    height: 400 
+  },
   backButton: {
     height: 40,
     width: 40,
@@ -286,14 +315,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  titleText: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
-  content: { paddingHorizontal: 16, paddingTop: 20 },
-  heading: { fontSize: 20, fontWeight: '600', marginTop: 20, marginBottom: 10 },
-  text: { fontSize: 16, marginBottom: 6 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  descriptionBox: { paddingHorizontal: 16, paddingTop: 30 },
-  descriptionText: { fontStyle: 'italic', fontSize: 16 },
-  reviewsSection: { alignItems: 'center', marginTop: 30 },
+  titleText: { 
+    fontSize: 32, 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+  content: { 
+    paddingHorizontal: 16, 
+    paddingTop: 20 
+  },
+  heading: { 
+    fontSize: 20, 
+    fontWeight: '600', 
+    marginTop: 20, 
+    marginBottom: 10 
+  },
+  text: { 
+    fontSize: 16, 
+    marginBottom: 6 },
+  center: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  descriptionBox: { 
+    paddingHorizontal: 16, 
+    paddingTop: 30 
+  },
+  descriptionText: { 
+    fontStyle: 'italic', 
+    fontSize: 16 
+  },
+  reviewsSection: { 
+    alignItems: 'center', 
+    marginTop: 30 
+  },
   reviewButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -302,7 +358,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  reviewButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  reviewButtonText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  },
   ratingBadge: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 18,

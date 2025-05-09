@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Ionicons } from '@expo/vector-icons';
 
+// Profile & settings screen for user
 export default function SettingsScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [username, setUsername] = useState('');
@@ -17,8 +18,10 @@ export default function SettingsScreen() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const router = useRouter();
 
+  // Toggle dark mode (not active in UI)
   const toggleSwitch = () => setIsDarkMode(prev => !prev);
 
+  // Load user data from Firestore on mount
   useEffect(() => {
     const loadUserData = async () => {
       const user = auth.currentUser;
@@ -39,6 +42,7 @@ export default function SettingsScreen() {
     loadUserData();
   }, []);
 
+  // Save updated username to Firestore
   const saveUsername = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -56,6 +60,7 @@ export default function SettingsScreen() {
     }
   };
 
+  // Pick and upload profile image
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -82,11 +87,12 @@ export default function SettingsScreen() {
     }
   };
 
+  // Handle logout and redirect to login screen
   const handleLogout = async () => {
     try {
-      console.log('User before logout:', auth.currentUser); // should show a user
+      console.log('User before logout:', auth.currentUser);
       await signOut(auth);
-      console.log('User after logout:', auth.currentUser); // should be null
+      console.log('User after logout:', auth.currentUser);
       setTimeout(() => {
         router.replace('../auth/login');
       }, 500);
@@ -95,8 +101,10 @@ export default function SettingsScreen() {
     }
   };
 
+  // Render screen content
   return (
     <View style={styles.container}>
+      {/* Profile Image, Username, and Email */}
       <View style={styles.profileSection}>
         <View style={styles.profileImageWrapper}>
           <Image
@@ -111,6 +119,7 @@ export default function SettingsScreen() {
         <Text style={styles.nameText}>{username || 'User'}</Text>
         <Text style={styles.emailText}>{email}</Text>
 
+        {/* Username Editor */}
         {!showUsernameEditor ? (
           <TouchableOpacity onPress={() => {
             setUsernameInput('');
@@ -144,32 +153,30 @@ export default function SettingsScreen() {
         )}
       </View>
 
-        {/* On Hand Ingredients Button */}
+      {/* Settings Navigation Buttons */}
       <View style={styles.listSection}>
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/onhand')}>
           <Ionicons name="list" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>On-Hand Ingredients</Text>
         </TouchableOpacity>
 
-        {/* Saved Drinks Button */}
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/saved')}>
           <Ionicons name="bookmark" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>Saved Drinks</Text>
         </TouchableOpacity>
 
-        {/* Reviews Button */}
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/reviews')}>
           <Ionicons name="chatbubble-ellipses" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>View Your Reviews</Text>
         </TouchableOpacity>
 
-        {/* Edit Preferences Button */}
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/preferences')}>
           <Ionicons name="person-circle" size={28} color="#5c5c99" style={styles.listIcon}/>
           <Text style={styles.listLabel}>Edit Preferences</Text>
         </TouchableOpacity>
 
-        {/* Dark Mode Button (Sprint Two Goal)
+        {/* Optional: Dark mode toggle (commented out) */}
+        {/*
         <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
           <Ionicons
             name={isDarkMode ? 'moon' : 'sunny'}
@@ -191,7 +198,7 @@ export default function SettingsScreen() {
         */}
       </View>
 
-  {/* Logout Button */}
+      {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
@@ -199,7 +206,7 @@ export default function SettingsScreen() {
   );
 }
 
-//Stylesheet
+//Style for settings/profile screen: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,

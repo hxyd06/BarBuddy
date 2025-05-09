@@ -1,21 +1,9 @@
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  Platform,
-  KeyboardAvoidingView,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, TextInput, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db, auth } from '@/firebase/firebaseConfig';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import { Animated } from 'react-native';
 const KeyboardSafeWrapper = ({ children }: { children: React.ReactNode }) => (
   <KeyboardAvoidingView
     style={{ flex: 1 }}
@@ -26,19 +14,24 @@ const KeyboardSafeWrapper = ({ children }: { children: React.ReactNode }) => (
   </KeyboardAvoidingView>
 );
 
+// Explore screen component:
 export default function ExploreScreen() {
+
+  // Local state:
   const [username, setUsername] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [drinks, setDrinks] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
+  // Fetching user info:
   useEffect(() => {
     fetchUsername();
     fetchCategories();
     fetchDrinks();
   }, []);
 
+  // Fetching usernmae from Firestore:
   const fetchUsername = async () => {
     try {
       const user = auth.currentUser;
@@ -55,6 +48,7 @@ export default function ExploreScreen() {
     }
   };
 
+  // Fetching drink categories from Firestore:
   const fetchCategories = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'categories'));
@@ -68,6 +62,7 @@ export default function ExploreScreen() {
     }
   };
 
+  //Fetching drinks from Firestore:
   const fetchDrinks = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'cocktails'));
@@ -81,6 +76,7 @@ export default function ExploreScreen() {
     }
   };
 
+  // Drink filter based on search input:
   const filteredDrinks = drinks.filter((drink) =>
     typeof drink.name === 'string' &&
     drink.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -88,6 +84,7 @@ export default function ExploreScreen() {
 
   const isSearching = searchQuery.length > 0;
 
+  // Static Moods & Events with images:
   const moods = [
     { id: 'party', name: 'Party', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fparty.jpg?alt=media&token=ca8e8cb5-ea32-43d9-8756-ec38dde72ac7' },
     { id: 'date_night', name: 'Date Night', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fdatenight.jpg?alt=media&token=64b56afb-684f-41b2-89cc-b37792637498' },
@@ -101,6 +98,8 @@ export default function ExploreScreen() {
     <KeyboardSafeWrapper>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <View style={styles.container}>
+
+          {/* Header with welcome message and screen title */}
           <View style={styles.header}>
             {username && (
               <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#5c5c9a', textAlign: 'center', marginBottom: 10 }}>
@@ -111,7 +110,8 @@ export default function ExploreScreen() {
               Explore drinks
             </Text>
           </View>
-
+          
+          {/* Search bar input with cancel button */}
           <View style={styles.searchContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
@@ -127,13 +127,15 @@ export default function ExploreScreen() {
               )}
             </View>
           </View>
-
+          
+          {/* Result count when searching */}
           {isSearching && (
             <Text style={styles.resultCount}>
               {filteredDrinks.length} result{filteredDrinks.length !== 1 ? 's' : ''}
             </Text>
           )}
 
+          {/* Drink search results list */}
           {isSearching ? (
             <FlatList
               data={filteredDrinks}
@@ -162,6 +164,8 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
                 <Text style={styles.availableDrinksText}>Drinks I Can Make</Text>
               </View>
+
+              {/* Categories section */}
               <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id}
@@ -184,6 +188,7 @@ export default function ExploreScreen() {
                 )}
               />
 
+              {/* Moods & Events section */}
               <Text style={styles.subheader}>Moods & Events</Text>
 
               <FlatList
@@ -211,6 +216,7 @@ export default function ExploreScreen() {
   );
 }
 
+// Explore screen styling: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,

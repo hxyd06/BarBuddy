@@ -7,14 +7,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// Disable default header
 export const unstable_settings = {
   headerShown: false,
 };
 
+// Screen to display user's saved cocktail recipes
 export default function SavedDrinksScreen() {
   const router = useRouter();
   const [drinks, setDrinks] = useState<any[]>([]);
 
+  // Fetch saved drinks from Firestore
   const fetchSavedDrinks = async () => {
     try {
       const user = auth.currentUser;
@@ -28,6 +31,7 @@ export default function SavedDrinksScreen() {
     }
   };
 
+  // Remove a drink from saved recipes
   const handleUnsave = async (id: string) => {
     try {
       const user = auth.currentUser;
@@ -39,14 +43,17 @@ export default function SavedDrinksScreen() {
     }
   };
 
+  // Re-fetch saved drinks when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchSavedDrinks();
     }, [])
   );
 
+  // Render saved drinks list
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with back button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="white" />
@@ -54,11 +61,13 @@ export default function SavedDrinksScreen() {
         <Text style={styles.title}>Saved Recipes</Text>
       </View>
 
+      {/* Drink cards list */}
       <FlatList
         data={drinks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
+            {/* Tap to view drink detail */}
             <TouchableOpacity
               style={styles.cardContent}
               onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}>
@@ -71,6 +80,8 @@ export default function SavedDrinksScreen() {
                 <Text style={styles.drinkName}>{item.name}</Text>
               </View>
             </TouchableOpacity>
+
+            {/* Bookmark icon to unsave */}
             <TouchableOpacity onPress={() => handleUnsave(item.id)}>
               <Ionicons name="bookmark" size={24} color="#5c5c99" />
             </TouchableOpacity>
@@ -82,6 +93,7 @@ export default function SavedDrinksScreen() {
   );
 }
 
+// Styles for saved drinks screen:
 const styles = StyleSheet.create({
   container: {
     flex: 1,

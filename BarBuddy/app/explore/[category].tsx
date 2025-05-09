@@ -18,19 +18,20 @@ export default function CategoryDrinksScreen() {
   const [categoryImage, setCategoryImage] = useState<string>('');
   const [categoryName, setCategoryName] = useState<string>('');
 
+  // Fetch drinks and category/mood info when screen loads
   useEffect(() => {
     if (category) {
       fetchData();
     }
   }, [category]);
 
+  // Retrieve matching cocktails from Firestore
   const fetchData = async () => {
     if (!category) return;
 
     try {
       const categoryRef = doc(db, 'categories', category as string);
       const categorySnap = await getDoc(categoryRef);
-
       const allCocktailsSnap = await getDocs(collection(db, 'cocktails'));
 
       const allDrinksWithRatings = await Promise.all(
@@ -54,7 +55,7 @@ export default function CategoryDrinksScreen() {
       );
 
       if (categorySnap.exists()) {
-        // Firestore category path
+        // Category-based filtering
         const catData = categorySnap.data();
         setCategoryName(catData.name);
         setCategoryImage(catData.image || '');
@@ -62,7 +63,7 @@ export default function CategoryDrinksScreen() {
         const filtered = allDrinksWithRatings.filter(drink => drink.category === catData.name);
         setCocktails(filtered);
       } else {
-        // Mood path
+        // Mood-based filtering
         const moodId = category as string;
         setCategoryName(formatMoodName(moodId));
         setCategoryImage(getMoodImage(moodId));
@@ -70,15 +71,15 @@ export default function CategoryDrinksScreen() {
         const filtered = allDrinksWithRatings.filter(drink => getMoodTags(drink).includes(moodId));
         setCocktails(filtered);
       }
-
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  // Render category/mood screen content
   return (
     <View style={styles.container}>
-      {/* Header Image */}
+      {/* Header image and overlay */}
       <View>
         {categoryImage ? (
           <Image source={{ uri: categoryImage }} style={styles.headerImage} />
@@ -91,16 +92,19 @@ export default function CategoryDrinksScreen() {
           style={styles.gradientOverlay}
         />
 
+        {/* Back button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
 
+        {/* Title and results count */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleText}>{categoryName}</Text>
           <Text style={styles.subtitle}>{cocktails.length} Results</Text>
         </View>
       </View>
 
+      {/* List of matching cocktails */}
       <FlatList
         data={cocktails}
         keyExtractor={(item) => item.id}
@@ -128,7 +132,7 @@ export default function CategoryDrinksScreen() {
   );
 }
 
-// Helpers for mood names & images
+// Format readable mood names from IDs
 function formatMoodName(id: string) {
   const map: Record<string, string> = {
     party: 'Party',
@@ -142,6 +146,7 @@ function formatMoodName(id: string) {
   return map[id] || id;
 }
 
+// Get mood image by ID
 function getMoodImage(id: string) {
   const map: Record<string, string> = {
     party: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fparty.jpg?alt=media&token=ca8e8cb5-ea32-43d9-8756-ec38dde72ac7',
@@ -154,6 +159,7 @@ function getMoodImage(id: string) {
   return map[id] || '';
 }
 
+// Styles for explore drinks categories screen: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,

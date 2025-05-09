@@ -1,3 +1,4 @@
+// Imports: UI, navigation, icons, Firebase
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -9,10 +10,12 @@ import {
   query, where, Timestamp, onSnapshot, getDoc
 } from 'firebase/firestore';
 
+// Reviews screen for a specific drink
 export default function ReviewsScreen() {
   const { drink } = useLocalSearchParams();
   const router = useRouter();
 
+  // Local state
   const [userProfiles, setUserProfiles] = useState<Record<string, { photoURL?: string; username?: string }>>({});
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(0);
@@ -22,6 +25,7 @@ export default function ReviewsScreen() {
   const drinkId = (drink as string)?.toLowerCase().replace(/\s+/g, '');
   const currentUser = auth.currentUser;
 
+  // Realtime listener for reviews on this drink
   useEffect(() => {
     if (!drinkId) return;
 
@@ -35,6 +39,7 @@ export default function ReviewsScreen() {
     return () => unsubscribe();
   }, [drinkId]);
 
+  // Load profile pictures and usernames for review authors
   const fetchUserProfiles = async (reviews: any[]) => {
     const uids = [...new Set(reviews.map(r => r.uid))];
     const profileMap: Record<string, { photoURL?: string; username?: string }> = {};
@@ -53,6 +58,7 @@ export default function ReviewsScreen() {
     setUserProfiles(profileMap);
   };
 
+  // Submit or update a review
   const submitReview = async () => {
     const user = auth.currentUser;
     if (!user || !drinkId || rating === 0 || !reviewText.trim()) return;
@@ -69,6 +75,7 @@ export default function ReviewsScreen() {
 
     try {
       if (editingReviewId) {
+        // Update existing review
         await setDoc(doc(db, 'cocktails', drinkId, 'reviews', editingReviewId), reviewData, { merge: true });
 
         const allReviewsQuery = query(
@@ -88,6 +95,7 @@ export default function ReviewsScreen() {
 
         setEditingReviewId(null);
       } else {
+        // Add new review
         await addDoc(collection(db, 'cocktails', drinkId, 'reviews'), reviewData);
         await addDoc(collection(db, 'allReviews'), {
           ...reviewData,
@@ -103,6 +111,7 @@ export default function ReviewsScreen() {
     }
   };
 
+  // Render a single review card
   const renderReviewCard = (item: any) => (
     <View style={styles.reviewCard}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
@@ -121,6 +130,7 @@ export default function ReviewsScreen() {
       <Text style={styles.reviewRating}>Rating: {item.rating}/5</Text>
       <Text style={styles.reviewText}>{item.text}</Text>
 
+      {/* Edit/Delete actions if current user authored this review */}
       {auth.currentUser?.uid === item.uid && (
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={() => {
@@ -154,11 +164,14 @@ export default function ReviewsScreen() {
     </View>
   );
 
+  // Filter user review separately from others
   const userReview = reviews.find(r => r.uid === currentUser?.uid);
   const otherReviews = reviews.filter(r => r.uid !== currentUser?.uid);
 
+  // Render review form and list
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with back button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
@@ -166,6 +179,7 @@ export default function ReviewsScreen() {
         <Text style={styles.title}>Reviews</Text>
       </View>
 
+      {/* Review form */}
       <View style={{ padding: 20 }}>
         <View style={styles.starsRow}>
           {[1, 2, 3, 4, 5].map(i => (
@@ -190,6 +204,7 @@ export default function ReviewsScreen() {
           <Text style={styles.submitText}>Submit Review</Text>
         </TouchableOpacity>
 
+        {/* User's own review */}
         {userReview && (
           <>
             <Text style={{ fontWeight: 'bold', marginBottom: 6 }}>You posted:</Text>
@@ -197,6 +212,7 @@ export default function ReviewsScreen() {
           </>
         )}
 
+        {/* Other users' reviews */}
         {otherReviews.length > 0 && (
           <>
             <Text style={{ fontWeight: 'bold', marginBottom: 6, marginTop: 12 }}>Others posted:</Text>
