@@ -6,7 +6,6 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const router = useRouter();
 //Define category names as in database
 const categories = [
     'Beer/Cider',
@@ -39,6 +38,7 @@ const categories = [
 
 //Add ingredient screen
 export default function addIngredientScreen() {
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
