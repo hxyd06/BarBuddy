@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar, Share } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -111,6 +111,34 @@ export default function DrinkDetailScreen() {
       console.error('Error toggling saved recipe:', error);
     }
   };
+  
+  const handleShareDrink = async () => { 
+    // if no drink data, return empty
+    if (!drinkData) return;
+    try {
+      // format the ingredients and measurements for readability
+      const formattedIngredients = Array.from({ length: 15 }, (_, i) => ({
+        ingredient: drinkData[`strIngredient${i + 1}`],
+        measure: drinkData[`strMeasure${i + 1}`],
+      }))
+      .filter((item) => item.ingredient)
+      .map((item) => `• ${item.measure || ''} ${item.ingredient}`)
+      .join('\n');
+      // format the share message
+      const shareMessage = `Here's a recipe from BarBuddy!\n\n`+
+                          `🍹 ${drinkData.strDrink} 🍹\n\n` +
+                          `${aiDescription ? aiDescription + '\n\n' : ''}` +
+                          `Ingredients:\n${formattedIngredients}\n\n` +
+                          `Instructions:\n${drinkData.strInstructions}`;
+      
+      //share the message                    
+      await Share.share({
+        message: shareMessage,
+      });
+    } catch (error) {
+      console.error('Error sharing drink:', error);
+    }
+  };
 
   // Check ingredients against user preferences
   useEffect(() => {
@@ -149,7 +177,6 @@ export default function DrinkDetailScreen() {
     checkIngredients();
   }, [drinkData]);
 
-  // Show loading spinner
   if (loading) {
     return (
       <View style={styles.center}>
@@ -158,7 +185,6 @@ export default function DrinkDetailScreen() {
     );
   }
 
-  // Show fallback message if drink not found
   if (!drinkData) {
     return (
       <View style={styles.center}>
@@ -167,32 +193,30 @@ export default function DrinkDetailScreen() {
     );
   }
 
-  // Render drink details
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-      {/* Scrollable content */}
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-
-        {/* Back button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
 
-        {/* Save/View saved buttons */}
         <View style={styles.saveWrapper}>
           {isSaved && (
             <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
               <Text style={styles.viewSavedText}>View Saved</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
-            <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
-          </TouchableOpacity>
+          <View style={styles.actionButtonsColumn}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleSaveDrink}>
+              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShareDrink}>
+              <Ionicons name="share-outline" size={28} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Drink image and title */}
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />
@@ -208,14 +232,13 @@ export default function DrinkDetailScreen() {
           </View>
         </View>
 
-        {/* AI-generated description */}
         {aiDescription && (
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>{aiDescription}</Text>
           </View>
         )}
 
-        {/* Ingredient preference warning */}
+        {/* Display a warning if bad ingredient */}
         {hasBadIngredient && (
           <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
             <Text style={{ color: 'red', fontWeight: 'bold' }}>
@@ -224,7 +247,6 @@ export default function DrinkDetailScreen() {
           </View>
         )}
 
-        {/* Ingredients and instructions */}
         <View style={styles.content}>
           <Text style={styles.heading}>Ingredients</Text>
           {Array.from({ length: 15 }, (_, i) => i + 1)
@@ -243,7 +265,6 @@ export default function DrinkDetailScreen() {
           <Text style={styles.text}>{drinkData.strInstructions}</Text>
         </View>
 
-        {/* Navigate to reviews */}
         <View style={styles.reviewsSection}>
           <TouchableOpacity
             style={styles.reviewButton}
@@ -256,22 +277,10 @@ export default function DrinkDetailScreen() {
   );
 }
 
-// Styling for drinks detail screen:
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#fff' 
-  },
-  headerImage: { 
-    width: '100%', 
-    height: 400, 
-    resizeMode: 'cover' 
-  },
-  gradientOverlay: { 
-    position: 'absolute', 
-    width: '100%', 
-    height: 400 
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  headerImage: { width: '100%', height: 400, resizeMode: 'cover' },
+  gradientOverlay: { position: 'absolute', width: '100%', height: 400 },
   backButton: {
     height: 40,
     width: 40,
@@ -283,19 +292,24 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 10,
   },
-  saveButton: {
+  actionButton: {
     height: 40,
     width: 40,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 6,
     borderRadius: 30,
+    marginBottom: 5,
+  },
+  actionButtonsColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   saveWrapper: {
     position: 'absolute',
     top: 50,
     right: 20,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     zIndex: 10,
   },
   viewSavedButton: {
@@ -315,41 +329,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  titleText: { 
-    fontSize: 32, 
-    fontWeight: 'bold', 
-    color: '#fff' 
-  },
-  content: { 
-    paddingHorizontal: 16, 
-    paddingTop: 20 
-  },
-  heading: { 
-    fontSize: 20, 
-    fontWeight: '600', 
-    marginTop: 20, 
-    marginBottom: 10 
-  },
-  text: { 
-    fontSize: 16, 
-    marginBottom: 6 },
-  center: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
-  },
-  descriptionBox: { 
-    paddingHorizontal: 16, 
-    paddingTop: 30 
-  },
-  descriptionText: { 
-    fontStyle: 'italic', 
-    fontSize: 16 
-  },
-  reviewsSection: { 
-    alignItems: 'center', 
-    marginTop: 30 
-  },
+  titleText: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
+  content: { paddingHorizontal: 16, paddingTop: 20 },
+  heading: { fontSize: 20, fontWeight: '600', marginTop: 20, marginBottom: 10 },
+  text: { fontSize: 16, marginBottom: 6 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  descriptionBox: { paddingHorizontal: 16, paddingTop: 30 },
+  descriptionText: { fontStyle: 'italic', fontSize: 16 },
+  reviewsSection: { alignItems: 'center', marginTop: 30 },
   reviewButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -358,11 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  reviewButtonText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    fontWeight: 'bold' 
-  },
+  reviewButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   ratingBadge: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 18,
