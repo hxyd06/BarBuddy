@@ -299,7 +299,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
             showsUserLocation
             showsMyLocationButton={false}
             showsCompass={true}
-            customMapStyle={colorScheme === 'dark' ? darkMapStyle : []}
+            customMapStyle={lightMapStyle} // Always use light map style
           >
             {places.map((place) => (
               <Marker
@@ -381,135 +381,49 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
   );
 }
 
-// Custom dark mode style for Google Maps
-const darkMapStyle = [
-  {
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#212121"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.icon",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#212121"
-      }
-    ]
-  },
+// Light map style with enhanced features
+const lightMapStyle = [
   {
     "featureType": "administrative",
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#757575"
+        "visibility": "simplified"
       }
     ]
   },
   {
-    "featureType": "administrative.country",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#9e9e9e"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.land_parcel",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.locality",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#bdbdbd"
-      }
-    ]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
+    "featureType": "landscape.natural",
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#181818"
+        "color": "#e8e8e0"
       }
     ]
   },
   {
     "featureType": "poi.park",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#616161"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#1b1b1b"
-      }
-    ]
-  },
-  {
-    "featureType": "road",
     "elementType": "geometry.fill",
     "stylers": [
       {
-        "color": "#2c2c2c"
+        "color": "#c8e6c8"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "on"
       }
     ]
   },
   {
     "featureType": "road",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#8a8a8a"
-      }
-    ]
-  },
-  {
-    "featureType": "road.arterial",
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#373737"
+        "visibility": "simplified"
       }
     ]
   },
@@ -518,34 +432,42 @@ const darkMapStyle = [
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#3c3c3c"
+        "color": "#ffd286"
       }
     ]
   },
   {
-    "featureType": "road.highway.controlled_access",
+    "featureType": "road.highway",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#4e4e4e"
+        "color": "#ffffff"
       }
     ]
   },
   {
     "featureType": "road.local",
-    "elementType": "labels.text.fill",
+    "elementType": "geometry",
     "stylers": [
       {
-        "color": "#616161"
+        "color": "#ffffff"
       }
     ]
   },
   {
-    "featureType": "transit",
-    "elementType": "labels.text.fill",
+    "featureType": "transit.line",
     "stylers": [
       {
-        "color": "#757575"
+        "visibility": "on"
       }
     ]
   },
@@ -554,16 +476,25 @@ const darkMapStyle = [
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#000000"
+        "color": "#b3d1ff"
       }
     ]
   },
   {
     "featureType": "water",
-    "elementType": "labels.text.fill",
+    "elementType": "labels.text",
     "stylers": [
       {
-        "color": "#3d3d3d"
+        "color": "#4d8fcc"
+      }
+    ]
+  },
+  {
+    "featureType": "building",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e7e5df"
       }
     ]
   }

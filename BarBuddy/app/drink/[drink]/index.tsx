@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar, Share } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,7 +71,7 @@ export default function DrinkDetailScreen() {
         setDrinkData(null);
       }
     } catch (error) {
-      
+      console.error('Error fetching drink details or AI description:', error);
     } finally {
       setLoading(false);
     }
@@ -104,6 +104,35 @@ export default function DrinkDetailScreen() {
       }
     } catch (error) {
       console.error('Error toggling saved recipe:', error);
+    }
+  };
+
+  //share drinks
+  const handleShareDrink = async () => { 
+    // if no drink data, return empty
+    if (!drinkData) return;
+    try {
+      // format the ingredients and measurements for readability
+      const formattedIngredients = Array.from({ length: 15 }, (_, i) => ({
+        ingredient: drinkData[`strIngredient${i + 1}`],
+        measure: drinkData[`strMeasure${i + 1}`],
+      }))
+      .filter((item) => item.ingredient)
+      .map((item) => `• ${item.measure || ''} ${item.ingredient}`)
+      .join('\n');
+      // format the share message
+      const shareMessage = `Here's a recipe from BarBuddy!\n\n`+
+                          `🍹 ${drinkData.strDrink} 🍹\n\n` +
+                          `${aiDescription ? aiDescription + '\n\n' : ''}` +
+                          `Ingredients:\n${formattedIngredients}\n\n` +
+                          `Instructions:\n${drinkData.strInstructions}`;
+      
+      //share the message                    
+      await Share.share({
+        message: shareMessage,
+      });
+    } catch (error) {
+      console.error('Error sharing drink:', error);
     }
   };
 
@@ -174,9 +203,14 @@ export default function DrinkDetailScreen() {
               <Text style={styles.viewSavedText}>View Saved</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveDrink}>
-            <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
-          </TouchableOpacity>
+          <View style={styles.actionButtonsColumn}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleSaveDrink}>
+              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShareDrink}>
+              <Ionicons name="share-outline" size={28} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View>
@@ -254,19 +288,24 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 10,
   },
-  saveButton: {
+  actionButton: {
     height: 40,
     width: 40,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 6,
     borderRadius: 30,
+    marginBottom: 5,
+  },
+  actionButtonsColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   saveWrapper: {
     position: 'absolute',
     top: 50,
     right: 20,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     zIndex: 10,
   },
   viewSavedButton: {
