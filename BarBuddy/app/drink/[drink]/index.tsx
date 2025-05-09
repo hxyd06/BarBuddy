@@ -71,7 +71,7 @@ export default function DrinkDetailScreen() {
         setDrinkData(null);
       }
     } catch (error) {
-      console.error('Error fetching drink details or AI description:', error);
+      
     } finally {
       setLoading(false);
     }

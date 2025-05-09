@@ -14,6 +14,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
         headerShown: false,
@@ -27,9 +28,6 @@ export default function TabLayout() {
           elevation: 0,
           shadowOpacity: 0,
         },
-        tabBarItemStyle: {
-          paddingVertical: 4,
-        },
         tabBarLabelStyle: {
           fontSize: 10,
         },
@@ -37,8 +35,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <Ionicons name="search" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -46,13 +44,6 @@ export default function TabLayout() {
         options={{
           title: 'Map',
           tabBarIcon: ({ color }) => <Ionicons name="map-outline" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={28} color={color} />,
         }}
       />
       <Tabs.Screen

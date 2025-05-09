@@ -1,11 +1,9 @@
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, FlatList, Image, Dimensions, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { getDistance } from 'geolib';
 import { Ionicons } from '@expo/vector-icons';
 
-const API_KEY = '12efb7805ad9018a5a8f1414046bad4e41052dc5662e9516e113f277044f0f6f';
-const MAX_DISTANCE = 5000; // for location filtering (in meters)
+const API_KEY = '06ae564d97cb28b2b0a7d3af98e9fc5c629cea2eceb8160062ba32415406c1e3';
 const GRID = {
     numColumns: 3,
     itemWidth: (Dimensions.get('window').width - 65) / 3,
@@ -13,18 +11,20 @@ const GRID = {
 
 export default function ShoppingScreen() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [results, setResults] = useState([]);
-    const [filteredResults, setFilteredResults] = useState<any[]>([]);
+    const [results, setResults] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(true);
     const [locationName, setLocationName] = useState('');
+    const [countryCode, setCountryCode] = useState('NZ'); // set default value to New Zealand, gets updated when location is retrieved
 
     // to retrieve user location
     useEffect(() => {
         (async () => {
             try {
                 setLocationLoading(true);
+
+                //request user for location permission
                 const { status } = await Location.requestForegroundPermissionsAsync();
                 
                 if (status !== 'granted') {
@@ -36,10 +36,12 @@ export default function ShoppingScreen() {
                     return;
                 }
                 
+                //get current location
                 const position = await Location.getCurrentPositionAsync({
                     accuracy: Location.Accuracy.Balanced,
                 });
                 
+                //retrieve coordinates and address
                 const { latitude, longitude } = position.coords;
                 setUserLocation({ latitude, longitude });
                 console.log(`User coords: ${latitude}, ${longitude}`);
@@ -52,10 +54,14 @@ export default function ShoppingScreen() {
                 if (coordAddress?.length > 0) {
                     const address = coordAddress[0];
                     console.log(`User address: ${JSON.stringify(address)}`);
-
+    
                     if (address.city) {
                         setLocationName(address.city);
-                    } 
+                    }
+    
+                    if (address.isoCountryCode) {
+                        setCountryCode(address.isoCountryCode);
+                    }
                 }
              } catch (error) {
                 console.error('Error retrieving location:', error);
@@ -70,24 +76,28 @@ export default function ShoppingScreen() {
 
     // fetch results from API
     const fetchResults = async () => {
-        if (!searchQuery) return;
+        // do not search if no query is provided
+        if (!searchQuery) return; 
 
+        // do not search if location is not ready
+        if (!locationName) {
+            Alert.alert('Location not retrieved', 'Please wait for location to be retrieved.');
+            return;
+        }
+
+        // set loading and clear old results
         setLoading(true);
         setResults([]);
-        setFilteredResults([]);
         
         try {
-            const apiUrl = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(searchQuery)}&api_key=${API_KEY}`;
-            const response = await fetch(apiUrl); 
+            const apiUrl = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(searchQuery)}&api_key=${API_KEY}&hl=en&gl=${countryCode}&location=${encodeURIComponent(locationName)}`;
+            const response = await fetch(apiUrl);
             const data = await response.json();
             
+            // process results and format them for grid display
             if (data.shopping_results?.length > 0) {
-                setResults(data.shopping_results);
-
-                if (userLocation) {
-                    const filtered = await locationFilter(data.shopping_results);
-                    setFilteredResults(filtered);
-                }
+                const formattedResults = gridFormat(data.shopping_results, GRID.numColumns);
+                setResults(formattedResults);
                 console.log(`Found ${data.shopping_results.length} results total`);
             } else {
                 console.log('No results found');
@@ -98,45 +108,12 @@ export default function ShoppingScreen() {
             Alert.alert('Search Failed', 'Please try again later.');
         }
         finally {
+            // turn off loading when finished
             setLoading(false);
         }
     };
 
-    // filters results with user location
-    const locationFilter = async (results: Array<{ source: string; title?: string; id?: string; position?: number }>) => {
-        if (!userLocation) return results;
-        
-        const nearbyResults = [];
-        
-        for (const result of results) {
-            try {
-                const searchTerm = `${result.source} ${result.title?.split(' ').slice(0, 3).join(' ')}`;
-                const locationResult = await Location.geocodeAsync(searchTerm);
-                
-                if (locationResult?.length > 0) {
-                    const { latitude, longitude } = locationResult[0];
-                    
-                    const distance = getDistance(
-                        { latitude: userLocation.latitude, longitude: userLocation.longitude },
-                        { latitude, longitude }
-                    );
-                    
-                    if (distance <= MAX_DISTANCE) {
-                        nearbyResults.push({
-                            ...result,
-                            distance: distance.toFixed(1),
-                        });
-                    }
-                }
-            } catch (error) {
-                
-            }
-        }
-
-        return gridFormat(nearbyResults, GRID.numColumns);
-    };
-
-
+    // format results for grid display
     const gridFormat = (data: any[], numColumns: number): any[] => {
         const totalItems = data.length;
         const remainder = totalItems % numColumns;
@@ -151,11 +128,14 @@ export default function ShoppingScreen() {
         return [...data, ...emptyItems];
     };
 
-    const renderItem = ({ item }: { item: { id?: string; thumbnail: string; title: string; price: string; source: string; distance?: string; empty?: boolean } }) => {
+    // render each item in the grid
+    const renderItem = ({ item }: { item: { id?: string; thumbnail: string; title: string; price: string; source: string; empty?: boolean } }) => {
+        // if item is empty, render an empty view
         if (item.empty) {
             return <View style={[styles.gridItem, styles.emptyItem]} />;
         }
         
+        // render item with thumbnail, title, price, and source
         return (
             <View style={styles.gridItem}>
                 <Image source={{ uri: item.thumbnail }} style={styles.thumbnail}/>
@@ -176,8 +156,6 @@ export default function ShoppingScreen() {
             </View>
         );
     };
-
-    const displayData = filteredResults.length > 0 ? filteredResults : results.length > 0 ? gridFormat(results, GRID.numColumns) : [];
 
     //main container
     return (
@@ -213,7 +191,7 @@ export default function ShoppingScreen() {
                 </View>
             ) : (
                 <FlatList
-                    data={displayData}
+                    data={results}
                     keyExtractor={(item) => item.id || Math.random().toString()}
                     numColumns={GRID.numColumns}
                     contentContainerStyle={styles.gridContainer}
@@ -222,7 +200,7 @@ export default function ShoppingScreen() {
                         <View style={styles.emptyContainer}>
                             <Ionicons name="search-outline" size={50} color="#5c5c99" />
                             <Text style={styles.emptyText}>
-                                {userLocation && filteredResults.length === 0 && results.length > 0 ? `No results found within ${MAX_DISTANCE}m of ${locationName}` : 'No results found'}
+                                No results found in {locationName}
                             </Text>
                             <Text style={styles.emptySubText}>
                                 Try a different search term
@@ -340,13 +318,6 @@ const styles = StyleSheet.create({
     productSource: {
         fontSize: 11,
         color: '#666',
-    },
-    distanceText: {
-        fontSize: 10,
-        color: '#5c5c99',
-        marginTop: 3,
-        flexDirection: 'row',
-        alignItems: 'center',
     },
     emptyContainer: {
         alignItems: 'center',
