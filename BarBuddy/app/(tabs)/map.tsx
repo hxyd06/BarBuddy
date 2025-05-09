@@ -260,8 +260,8 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={[styles.text, { color: colors.text }]}>Finding bars near you...</Text>
+        <ActivityIndicator size="large" color={'#5c5c99'} />
+        <Text style={[styles.text, { color: '#5c5c99' }]}>Finding bars near you...</Text>
       </SafeAreaView>
     );
   }
@@ -522,6 +522,7 @@ const lightMapStyle = [
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   centerContent: {
     justifyContent: 'center',
