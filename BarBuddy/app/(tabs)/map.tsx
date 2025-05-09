@@ -72,18 +72,17 @@ export default function MapScreen() {
     }
   };
 
-  // Fetch nearby bars, restaurants and liquor stores
-  const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
-    try {
-      const apiKey = 'AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko'; // Add your Google API key here
+// Replace the hardcoded API key with environment variable
+const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
+  try {
+    const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || ''; // Use environment variable
+    
+    if (Platform.OS === 'web') {
+      // For web, use a CORS proxy or your own backend
+      const response = await fetch(
+        `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=bar|restaurant|liquor_store&key=${apiKey}`
+      );
       
-      if (Platform.OS === 'web') {
-        // For web, use a CORS proxy or your own backend
-        // This is a simplified example - in production you'd use a proper CORS proxy or backend
-        const response = await fetch(
-          `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=bar|restaurant|liquor_store&key=${apiKey}`
-        );
-        
         const data = await response.json();
         
         if (data.status === 'OK') {

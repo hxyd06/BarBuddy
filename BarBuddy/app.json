@@ -1,5 +1,5 @@
 {
-  "expo": {
+ "expo": {
     "name": "BarBuddy",
     "slug": "BarBuddy",
     "version": "1.0.0",
@@ -17,7 +17,7 @@
       },
       "bundleIdentifier": "com.hxyd06.BarBuddy",
       "config": {
-        "googleMapsApiKey": "AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko"
+        "googleMapsApiKey": "${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}"
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
@@ -35,7 +35,7 @@
       "package": "com.hxyd06.BarBuddy",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAWa-YxwTNycdT8Y0n-OKeqJNWoDsOobko"
+          "apiKey": "${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}"
         }
       },
       "permissions": [
