@@ -158,11 +158,16 @@ export default function ExploreScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <Text style={styles.subheader}>Categories</Text>
 
-              <View>
-                <TouchableOpacity style={styles.availableDrinksButton} onPress={() => router.push('../settings/available-drinks')}>
+            {/* Available and Trending Drinks */}
+              <View style={styles.topButtons}>
+                <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('../settings/available-drinks')}>
                   <Image source={require('../../assets/images/drinksicanmake.webp')} style={styles.categoryImage} />
+                  <Text style={styles.categoryText}>Drinks I Can Make</Text>
                 </TouchableOpacity>
-                <Text style={styles.availableDrinksText}>Drinks I Can Make</Text>
+                <TouchableOpacity style={styles.topCategoryCard} onPress={() => router.push('../explore/trending')}>
+                  <Image source={require('../../assets/images/trendingdrinks.jpg')} style={styles.categoryImage}/>
+                  <Text style={styles.categoryText}>Trending Drinks</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Categories section */}
@@ -257,10 +262,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  availableDrinksButton: {
-    width: '96%',
-    marginBottom: 0,
+  topButtons: {
+    flexDirection: 'row',
+  },
+  topCategoryCard: {
+    width: '48%',
     alignItems: 'center',
+    marginBottom: 15,
+    marginLeft: 15,
   },
   categoryCard: {
     width: '48%',
