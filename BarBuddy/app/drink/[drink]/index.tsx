@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { model, db } from '@/firebase/firebaseConfig';
-import { doc, getDoc, setDoc, deleteDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, getDocs, collection, updateDoc, increment } from 'firebase/firestore';
 import { auth } from '@/firebase/firebaseConfig';
 
 // Drink detail screen component
@@ -36,6 +36,20 @@ export default function DrinkDetailScreen() {
       if (data.drinks && data.drinks.length > 0) {
         const cocktail = data.drinks[0];
         setDrinkData(cocktail);
+
+        setDrinkData(cocktail);
+
+      // Increment drink view count
+      const incrementViews = async (drinkName: string) => {
+        try {
+          const cocktailRef = doc(db, 'cocktails', drinkName);
+          await updateDoc(cocktailRef, { views: increment(1) });
+        } catch (error) {
+          console.error('Error incrementing views.', error);
+        }
+      };
+      await incrementViews(cocktail.strDrink.toLowerCase().replace(/\s+/g, ''));
+
 
         // Fetch average rating from reviews subcollection
         const reviewsRef = collection(db, 'cocktails', cocktail.strDrink.toLowerCase().replace(/\s+/g, ''), 'reviews');
