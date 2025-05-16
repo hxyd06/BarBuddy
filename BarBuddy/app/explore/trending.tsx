@@ -46,7 +46,7 @@ export default function TrendingDrinksScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.push('../home')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('../explore')}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.title}>Trending Drinks</Text>
