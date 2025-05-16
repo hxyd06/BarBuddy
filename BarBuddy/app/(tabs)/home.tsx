@@ -10,6 +10,7 @@ export default function HomeScreen() {
   const [username, setUsername] = useState<string | null>(null);
   const [randomTip, setRandomTip] = useState<string>('');
   const [savedDrinks, setSavedDrinks] = useState<any[]>([]);
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
@@ -31,8 +32,19 @@ export default function HomeScreen() {
 
   const generateRandomTip = async () => {
     try {
-      const prompt = 'Give me a short, clever 1–2 sentence tip for making better cocktails.';
-      const result = await model.generateContent(prompt);
+      const promptIdeas = [
+        'Give a clever tip about garnishes that most home bartenders overlook. No more than 3 sentences.',
+        'What’s a smart hack to balance sour and sweet in cocktails? Keep it within 3 sentences.',
+        'Suggest a cocktail tip involving unexpected ingredients. Limit to 3 sentences.',
+        'What’s a quirky technique to make cocktails visually impressive? No longer than 3 sentences.',
+        'Give a smart tip for using ice in cocktails creatively. Use no more than 3 sentences.',
+        'Offer a creative tip to improve the aroma of a cocktail. Tip should be within 3 sentences.',
+        'Provide a tip on how to use bitters more effectively. Keep the response under 3 sentences.',
+        'What’s a useful but lesser-known shaking or stirring technique? Max 3 sentences.',
+      ];
+      const randomPrompt = promptIdeas[Math.floor(Math.random() * promptIdeas.length)];
+
+      const result = await model.generateContent(randomPrompt);
       const tip = result.response.text().trim();
       if (tip) {
         setRandomTip(tip);
@@ -56,9 +68,33 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchRecentReviews = async () => {
+    try {
+      const snapshot = await getDocs(query(collection(db, 'allReviews'), orderBy('createdAt', 'desc'), limit(10)));
+      const reviewPromises = snapshot.docs.map(async (docSnap) => {
+        const reviewData = docSnap.data();
+        const userDoc = await getDoc(doc(db, 'users', reviewData.uid));
+        let username = 'Unknown';
+        let photoURL = null;
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          username = userData.username || reviewData.email?.split('@')[0] || 'Unknown';
+          photoURL = userData.photoURL || null;
+        } else {
+          username = reviewData.email?.split('@')[0] || 'Unknown';
+        }
+        return { id: docSnap.id, ...reviewData, username, photoURL };
+      });
+      const reviewsWithUserData = await Promise.all(reviewPromises);
+      setRecentReviews(reviewsWithUserData);
+    } catch (error) {
+      console.error('Error fetching recent reviews:', error);
+    }
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([fetchUsername(), generateRandomTip(), fetchSavedDrinks()]).finally(() => {
+    Promise.all([fetchUsername(), generateRandomTip(), fetchSavedDrinks(), fetchRecentReviews()]).finally(() => {
       setRefreshing(false);
     });
   }, []);
@@ -85,7 +121,7 @@ export default function HomeScreen() {
           <View style={styles.tipBadge}>
             <View style={styles.tipHeader}>
               <Ionicons name="bulb-outline" size={24} color="#292966" style={{ marginRight: 6 }} />
-              <Text style={styles.tipTitle}>Tip of the Day:</Text>
+              <Text style={styles.tipTitle}>Bar Hack</Text>
             </View>
             <Text style={styles.tipText}>{randomTip}</Text>
           </View>
@@ -95,20 +131,60 @@ export default function HomeScreen() {
           <View style={styles.savedSection}>
             <Text style={styles.savedHeader}>Your Recent Saved Drinks</Text>
             <FlatList
-              data={savedDrinks}
+              data={[...savedDrinks, { id: 'viewAll', viewAll: true }]}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                item.viewAll ? (
+                  <TouchableOpacity
+                    style={styles.drinkCardSmall}
+                    onPress={() => router.push('/settings/saved')}>
+                    <View style={styles.viewAllPlaceholder}> 
+                      <Ionicons name="arrow-forward-circle-outline" size={36} color="#5c5c9a" />
+                    </View>
+                    <Text style={styles.drinkName}>View All</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.drinkCardSmall}
+                    onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}>
+                    {item.image ? (
+                      <Image source={{ uri: item.image }} style={styles.drinkImageSmall} />
+                    ) : (
+                      <View style={styles.placeholderSmall} />
+                    )}
+                    <Text style={styles.drinkName}>{item.name}</Text>
+                  </TouchableOpacity>
+                )
+              )}
+            />
+          </View>
+        )}
+
+        {recentReviews.length > 0 && (
+          <View style={styles.savedSection}>
+            <Text style={styles.savedHeader}>Recent Reviews</Text>
+            <FlatList
+              data={recentReviews}
               keyExtractor={(item) => item.id}
               horizontal
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.drinkCard}
-                  onPress={() => router.push(`/drink/${encodeURIComponent(item.name)}`)}>
-                  {item.image ? (
-                    <Image source={{ uri: item.image }} style={styles.drinkImage} />
-                  ) : (
-                    <View style={styles.placeholder} />
-                  )}
-                  <Text style={styles.drinkName}>{item.name}</Text>
+                  style={styles.reviewCard}
+                  onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}/reviews`)}>
+                  <View style={styles.reviewHeader}>
+                    {item.photoURL ? (
+                      <Image source={{ uri: item.photoURL }} style={styles.avatar} />
+                    ) : (
+                      <View style={[styles.avatar, { backgroundColor: '#ccc' }]} />
+                    )}
+                    <Text style={styles.reviewUsername}>{item.username}</Text>
+                  </View>
+                  <Text style={styles.reviewRating}>Rating: {item.rating} / 5</Text>
+                  <Text style={styles.reviewText}>{item.text}</Text>
+                  <Text style={styles.reviewDrink}>on "{item.drinkName}"</Text>
                 </TouchableOpacity>
               )}
             />
@@ -185,28 +261,73 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#5c5c9a',
   },
-  drinkCard: {
+  drinkCardSmall: {
     marginRight: 12,
     alignItems: 'center',
-    width: 100,
+    width: 85,
   },
-  drinkImage: {
-    width: 100,
-    height: 100,
+  drinkImageSmall: {
+    width: 85,
+    height: 85,
     borderRadius: 10,
     backgroundColor: '#ccc',
   },
-  placeholder: {
-    width: 100,
-    height: 100,
+  placeholderSmall: {
+    width: 85,
+    height: 85,
     borderRadius: 10,
     backgroundColor: '#ccc',
+  },
+  viewAllPlaceholder: {
+    width: 85,
+    height: 85,
+    borderRadius: 10,
+    backgroundColor: '#f5f5fc',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   drinkName: {
     marginTop: 6,
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
     color: '#333',
     fontWeight: '500',
+  },
+  reviewCard: {
+    backgroundColor: '#f0f0f9',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 12,
+    width: 220,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  reviewUsername: {
+    fontWeight: 'bold',
+    color: '#292966',
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  reviewRating: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#777',
+  },
+  reviewDrink: {
+    marginTop: 4,
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#666',
   },
 });
