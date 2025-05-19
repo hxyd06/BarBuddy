@@ -84,6 +84,18 @@ export default function ExploreScreen() {
 
   const isSearching = searchQuery.length > 0;
 
+  //F
+  const handleRandomDrink = () => {
+  if (drinks.length === 0) return;
+
+  const randomIndex = Math.floor(Math.random() * drinks.length);
+  const randomDrink = drinks[randomIndex];
+
+  router.push(`/drink/${encodeURIComponent(randomDrink.name)}`)
+  console.log(randomDrink.name);
+};
+
+
   // Static Moods & Events with images:
   const moods = [
     { id: 'party', name: 'Party', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fparty.jpg?alt=media&token=ca8e8cb5-ea32-43d9-8756-ec38dde72ac7' },
@@ -178,6 +190,12 @@ export default function ExploreScreen() {
                 scrollEnabled={false}
                 columnWrapperStyle={{ justifyContent: 'space-between' }}
                 contentContainerStyle={{ marginBottom: 30 }}
+                ListFooterComponent={() => (
+                  //Random Drinks Button
+                  <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
+                    <Text style={styles.randomButtonText}>Surprise Me</Text>
+                  </TouchableOpacity>
+                )}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.categoryCard}
@@ -325,4 +343,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 5,
   },
+  randomButton: {
+  backgroundColor: '#5c5c99',
+  padding: 12,
+  borderRadius: 10,
+  marginHorizontal: 20,
+  marginTop: 16,
+  marginBottom: 10,
+  alignItems: 'center',
+},
+
+randomButtonText: {
+  color: '#fff',
+  fontWeight: '600',
+  fontSize: 16,
+},
 });
