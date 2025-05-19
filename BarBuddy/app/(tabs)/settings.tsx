@@ -17,6 +17,7 @@ export default function SettingsScreen() {
   const [showUsernameEditor, setShowUsernameEditor] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const router = useRouter();
+  const [role, setRole] = useState('');
 
   // Toggle dark mode (not active in UI)
   const toggleSwitch = () => setIsDarkMode(prev => !prev);
@@ -36,6 +37,7 @@ export default function SettingsScreen() {
         setUsername(data.username || '');
         setUsernameInput('');
         setProfileImage(data.photoURL || null);
+        setRole(data.role || '');
       }
     };
 
@@ -118,6 +120,11 @@ export default function SettingsScreen() {
 
         <Text style={styles.nameText}>{username || 'User'}</Text>
         <Text style={styles.emailText}>{email}</Text>
+
+        {/* Business Account Confirmation */}
+        {role === 'business' && (
+          <Text style={styles.roleText}>Logged in as a business</Text>
+        )}
 
         {/* Username Editor */}
         {!showUsernameEditor ? (
@@ -356,5 +363,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  roleText: {
+    color: '#A3A3CC',
+    fontSize: 12,
+    marginTop: -12,
+    marginBottom: 5,
   },
 });
