@@ -11,6 +11,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [role, setRole] = useState<'user' | 'business'>('user');
 
   // Handle signup form submission
   const handleSignUp = async () => {
@@ -39,6 +40,7 @@ export default function Signup() {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, 'users', cred.user.uid), {
         email,
+        role,
         createdAt: new Date(),
         savedRecipes: [],
         onHandIngredients: [],
@@ -78,6 +80,15 @@ export default function Signup() {
           style={styles.input}
         />
         {passwordError !== '' && <Text style={styles.errorText}>{passwordError}</Text>}
+
+        {/* Role Selection */}
+        <TouchableOpacity onPress={() => setRole(role === 'user' ? 'business' : 'user')}>
+          <Text style={styles.toggleText}>
+            Signing up as a <Text style={styles.roleText}>{role}</Text>{'\n'} 
+          </Text>
+
+        </TouchableOpacity>
+        <Text style={styles.tapText}>(tap to switch)</Text>
 
         {/* Submit Button */}
         <Button title="Sign Up" onPress={handleSignUp} />
@@ -136,4 +147,21 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     fontWeight: '500' 
   },
+  roleText: {
+    color: '#292966',
+    
+  },
+  toggleText: {
+    color: '#5c5c99',
+    marginBottom: -7,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  tapText: {
+    fontSize: 12,
+    color: '#A3A3CC',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 0,
+  }
 });
