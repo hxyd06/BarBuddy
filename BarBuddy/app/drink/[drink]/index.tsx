@@ -123,9 +123,10 @@ export default function DrinkDetailScreen() {
 
     const recipeId = drinkData.strDrink.toLowerCase().replace(/\s+/g, '');
     const recipeRef = doc(db, 'users', user.uid, 'savedRecipes', recipeId);
+    const currentSaved = isSaved;
 
     try {
-      if (isSaved) {
+      if (currentSaved) {
         await deleteDoc(recipeRef);
         setIsSaved(false);
       } else {
@@ -243,13 +244,13 @@ export default function DrinkDetailScreen() {
         {/* Save button and View Saved button */}
         <View style={styles.saveWrapper}>
           {isSaved && (
-            <TouchableOpacity style={styles.viewSavedButton} onPress={() => router.push('/settings/saved')}>
+            <TouchableOpacity style={styles.viewSavedButton} testID="save-button" onPress={() => router.push('/settings/saved')}>
               <Text style={styles.viewSavedText}>View Saved</Text>
             </TouchableOpacity>
           )}
           <View style={styles.actionButtonsColumn}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleSaveDrink}>
-              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" />
+            <TouchableOpacity style={styles.actionButton} testID="toggle-save-button" onPress={handleSaveDrink}>
+              <Ionicons name={isSaved ? 'checkmark' : 'bookmark-outline'} size={28} color="white" testID="icon" />
             </TouchableOpacity>
 
             {/* Share Button */}
