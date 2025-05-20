@@ -75,6 +75,16 @@ export default function ExploreScreen() {
     { id: 'brunch', name: 'Brunch', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fbrunch.jpg?alt=media&token=59f4cca2-f766-4d67-91de-731c569647cb' },
   ];
 
+  //Function to handle random drink
+  const handleRandomDrink = () => {
+    //Generate random index of drink list
+    const randomIndex = Math.floor(Math.random() * drinks.length);
+    const randomDrink = drinks[randomIndex];
+
+    //Go to drink screen
+    router.push(`/drink/${randomDrink.name}`);
+  };
+
   return (
     <KeyboardSafeWrapper>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -189,7 +199,11 @@ export default function ExploreScreen() {
                   </TouchableOpacity>
                 )}
               />
-            </ScrollView>
+              {/* Random Drinks Button*/}
+              <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
+                <Text style={styles.randomButtonText}>Surprise Me</Text>
+              </TouchableOpacity>
+          </ScrollView>
           )}
         </View>
       </SafeAreaView>
@@ -300,5 +314,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     borderRadius: 10,
     marginBottom: 5,
+  },
+  randomButton: {
+    backgroundColor: '#5c5c99',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: -50,
+    marginBottom: 30,
+    marginHorizontal: 20,
+    alignItems: 'center',
+  },
+  randomButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
