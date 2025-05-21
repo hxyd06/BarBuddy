@@ -141,6 +141,10 @@ export default function HomeScreen() {
           <Text style={styles.welcomeText}>Welcome, {username}</Text>
         )}
 
+        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
+            <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
+          </TouchableOpacity>
+
         {randomTip && (
           <View style={styles.tipBadge}>
             <View style={styles.tipHeader}>
@@ -371,4 +375,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 18,
   },
+  businessButton: {
+  backgroundColor: '#f5f5fc',
+  padding: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: '#5c5c9a',
+  width: '100%'
+},
+businessButtonText: {
+  fontSize: 16,
+  color: '#5c5c9a',
+  fontWeight: '500'
+},
 });
