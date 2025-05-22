@@ -5,6 +5,7 @@ import { db, auth, model } from '@/firebase/firebaseConfig';
 import { collection, doc, getDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import LearningHubCard from '@/components/LearningHubCard';
 
 export default function HomeScreen() {
   const [username, setUsername] = useState<string | null>(null);
@@ -32,17 +33,17 @@ export default function HomeScreen() {
   };
 
   const fetchDrinks = async () => {
-  try {
-    const snapshot = await getDocs(collection(db, 'cocktails'));
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setDrinks(data);
-  } catch (error) {
-    console.error('Error fetching drinks:', error);
-  }
-};
+    try {
+      const snapshot = await getDocs(collection(db, 'cocktails'));
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDrinks(data);
+    } catch (error) {
+      console.error('Error fetching drinks:', error);
+    }
+  };
 
   const handleRandomDrink = () => {
     if (drinks.length === 0) return;
@@ -54,7 +55,7 @@ export default function HomeScreen() {
     console.log(randomDrink.name);
   };
 
-  const generateRandomTip = async () => {
+ const generateRandomTip = async () => {
     try {
       const promptIdeas = [
         'Give a clever tip about garnishes that most home bartenders overlook. No more than 3 sentences.',
@@ -151,9 +152,9 @@ export default function HomeScreen() {
           </View>
         )}
 
-          <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
-            <Text style={styles.randomButtonText}>Surprise Me</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
+          <Text style={styles.randomButtonText}>Surprise Me</Text>
+        </TouchableOpacity>
 
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
@@ -218,6 +219,10 @@ export default function HomeScreen() {
             />
           </View>
         )}
+
+        {/* Learning Hub Card - Added after recent reviews */}
+        <LearningHubCard />
+
       </ScrollView>
     </SafeAreaView>
   );
