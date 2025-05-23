@@ -130,6 +130,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('../../assets/icons/BarBuddy-icon.png')} // adjust if needed
+          style={styles.icon}
+          resizeMode="contain"
+        />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
 
@@ -151,9 +156,9 @@ export default function HomeScreen() {
           </View>
         )}
 
-          <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
-            <Text style={styles.randomButtonText}>Surprise Me</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
+          <Text style={styles.randomButtonText}>Surprise Me</Text>
+        </TouchableOpacity>
 
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
@@ -234,17 +239,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 10,
     marginBottom: 10,
   },
-  welcomeText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#5c5c9a',
-    textAlign: 'center',
+  icon: {
+    width: 36,
+    height: 36,
+    marginRight: 10,
+    tintColor: '#5c5c99',
   },
   screenTitle: {
     fontSize: 28,
+    fontWeight: 'bold',
+    color: '#5c5c9a',
+  },
+  welcomeText: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#5c5c9a',
     textAlign: 'center',
