@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
@@ -48,6 +48,11 @@ export default function Login() {
   // Render login form
   return (
     <View style={styles.container}>
+      <Image
+      source={require('../../assets/icons/BarBuddy-icon.png')}
+      style={styles.icon}
+      resizeMode="contain"
+      />
       <Text style={styles.title}>BarBuddy</Text>
       <Text style={styles.subtitle}>Your pocket mixologist</Text>
       <TextInput
@@ -87,8 +92,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff'
   },
+    icon: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    marginBottom: 10,
+    tintColor: '#5c5c99',
+  },
   title: {
-    fontSize: 32,
+    fontSize: 40,
     color: '#5c5c99',
     fontWeight: 'bold',
     textAlign: 'center',
