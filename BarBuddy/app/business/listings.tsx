@@ -1,188 +1,287 @@
-import React, { useEffect, useState } from 'react';
-import {View,Text,FlatList,TouchableOpacity,StyleSheet,ActivityIndicator,Image,} from 'react-native';
-import { collection, getDocs, doc, getDoc, orderBy, query } from 'firebase/firestore';
-import { db, auth } from '@/firebase/firebaseConfig';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image } from "react-native";
+import { collection, getDocs, doc, getDoc, deleteDoc, orderBy, query } from "firebase/firestore";
+import { db, auth } from "@/firebase/firebaseConfig";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Listings() {
   const [businesses, setBusinesses] = useState<any[]>([]);
-  const [isBusiness, setIsBusiness] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [userRole, setUserRole] = useState<string>("");
+
   const router = useRouter();
 
   useEffect(() => {
     fetchListings(sortOrder);
-    checkRole();
+    fetchUserRole();
   }, [sortOrder]);
 
-  const fetchListings = async (order: 'newest' | 'oldest') => {
+  const fetchUserRole = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserRole(userData.role || "");
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
+
+  const fetchListings = async (order: "newest" | "oldest") => {
     setLoading(true);
     try {
       const businessQuery = query(
-        collection(db, 'businesses'),
-        orderBy('createdAt', order === 'newest' ? 'desc' : 'asc')
+        collection(db, "businesses"),
+        orderBy("createdAt", order === "newest" ? "desc" : "asc")
       );
       const snapshot = await getDocs(businessQuery);
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setBusinesses(data);
     } catch (error) {
-      console.error('Error fetching business listings:', error);
+      console.error("Error fetching business listings:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const checkRole = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    const role = userDoc.data()?.role;
-    if (role === 'business') {
-      setIsBusiness(true);
-    }
+  const handleDelete = async (listingId: string) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this listing?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "businesses", listingId));
+              setBusinesses((prev) =>
+                prev.filter((item) => item.id !== listingId)
+              );
+            } catch (error) {
+              console.error("Error deleting listing:", error);
+            }
+          },
+        },
+      ]
+    );
   };
 
-  const handleNewListing = () => {
-    router.push('/business/newlisting');
+  const renderListing = ({ item }: { item: any }) => {
+    const isOwner = auth.currentUser?.uid === item.ownerId;
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity
+          onPress={() =>
+            router.push({ pathname: "/business/[id]", params: { id: item.id } })
+          }
+        >
+          {item.imageURL ? (
+            <Image
+              source={{ uri: item.imageURL }}
+              style={styles.businessImage}
+            />
+          ) : null}
+          <Text style={styles.name}>{item.name}</Text>
+          {item.location && (
+            <Text style={styles.listingSubText}>{item.location}</Text>
+          )}
+          {item.hours && (
+            <Text style={styles.listingSubText}>{item.hours}</Text>
+          )}
+        </TouchableOpacity>
+        {isOwner && (
+          <View style={styles.managementButtons}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/business/edit",
+                  params: { id: item.id },
+                })
+              }
+            >
+              <Text style={styles.editButton}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <Text style={styles.deleteButton}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
   };
 
-  const renderListing = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      {item.imageURL ? (
-        <Image source={{ uri: item.imageURL }} style={styles.businessImage} />
-      ) : null}
-      <Text style={styles.name}>{item.name}</Text>
-      {item.location && <Text style={styles.location}>{item.location}</Text>}
-      {item.hours && <Text style={styles.hours}>{item.hours}</Text>}
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
+  const renderHeader = () => (
+    <View>
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backIcon}
+        >
           <Ionicons name="arrow-back" size={24} color="#5c5c99" />
         </TouchableOpacity>
         <Text style={styles.title}>Business Listings</Text>
-        {isBusiness && (
-          <TouchableOpacity onPress={handleNewListing} style={styles.plusIcon}>
-            <Ionicons name="add-circle" size={28} color="#5c5c99" />
+        {userRole === "business" && (
+          <TouchableOpacity
+            onPress={() => router.push("/business/newlisting")}
+            style={styles.plusIcon}
+          >
+            <Ionicons name="add" size={28} color="#5c5c99" />
           </TouchableOpacity>
         )}
       </View>
+
       <View style={styles.sortRow}>
         <Text style={styles.sortByText}>Sort by:</Text>
-        <TouchableOpacity style={[styles.sortButton, sortOrder === 'newest' && styles.enabled]} onPress={() => setSortOrder('newest')}>
-          <Text style={[styles.sortText, sortOrder === 'newest' && styles.enabledText]}>Newest</Text>
+        <TouchableOpacity
+          onPress={() => setSortOrder("newest")}
+          style={styles.sortButton}
+        >
+          <Text
+            style={
+              sortOrder === "newest" ? styles.enabledText : styles.sortText
+            }
+          >
+            Newest
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.sortButton, sortOrder === 'oldest' && styles.enabled]} onPress={() => setSortOrder('oldest')}>
-          <Text style={[styles.sortText, sortOrder === 'oldest' && styles.enabledText]}>Oldest</Text>
+        <TouchableOpacity
+          onPress={() => setSortOrder("oldest")}
+          style={styles.sortButton}
+        >
+          <Text
+            style={
+              sortOrder === "oldest" ? styles.enabledText : styles.sortText
+            }
+          >
+            Oldest
+          </Text>
         </TouchableOpacity>
       </View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#5c5c99" />
-      ) : (
-        <FlatList
-          data={businesses}
-          keyExtractor={(item) => item.id}
-          renderItem={renderListing}
-          contentContainerStyle={{ paddingBottom: 50 }}
-        />
-      )}
     </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#5c5c99" />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={businesses}
+        keyExtractor={(item) => item.id}
+        renderItem={renderListing}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingHorizontal: 16,
+    backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContent: {
+    padding: 20,
   },
   headerRow: {
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
     height: 40,
   },
   backIcon: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
   },
   plusIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: 0,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#5c5c99',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#5c5c99",
+    textAlign: "center",
   },
   card: {
-    backgroundColor: '#f5f5fc',
-    borderRadius: 10,
-    padding: 16,
+    backgroundColor: "#f5f5fc",
+    padding: 12,
+    borderRadius: 8,
     marginBottom: 12,
   },
   businessImage: {
-    width: '100%',
+    width: "100%",
     height: 150,
-    borderRadius: 10,
+    borderRadius: 8,
     marginBottom: 10,
   },
   name: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
-  location: {
+  listingSubText: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    color: "#555",
   },
-  hours: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 4,
+  managementButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
   },
-  sortButton: {
-    marginHorizontal: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#5c5c99',
-    backgroundColor: '#fff',
+  editButton: {
+    color: "#5c5c99",
+    fontWeight: "bold",
+    marginRight: 16,
   },
-  enabled: {
-    backgroundColor: '#5c5c99',
-  },
-  enabledText: {
-    color: '#fff',
+  deleteButton: {
+    color: "red",
+    fontWeight: "bold",
   },
   sortRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   sortByText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#5c5c99',
-    marginRight: 8,
+    marginRight: 10,
+    fontWeight: "500",
+    color: "#5c5c99",
+  },
+  sortButton: {
+    marginRight: 10,
   },
   sortText: {
-    color: '#5c5c99',
-    fontWeight: '500',
+    color: "#5c5c99",
+  },
+  enabledText: {
+    color: "#000",
+    fontWeight: "bold",
   },
 });

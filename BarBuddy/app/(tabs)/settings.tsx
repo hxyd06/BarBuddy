@@ -182,6 +182,13 @@ export default function SettingsScreen() {
           <Text style={styles.listLabel}>Edit Preferences</Text>
         </TouchableOpacity>
 
+        {role === 'business' && (
+          <TouchableOpacity style={styles.listItem} onPress={() => router.push('/business/your-listings')}>
+            <Ionicons name="storefront" size={28} color="#5c5c99" style={styles.listIcon} />
+            <Text style={styles.listLabel}>Your Listings</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Optional: Dark mode toggle (commented out) */}
         {/*
         <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
