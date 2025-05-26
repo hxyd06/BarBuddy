@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     marginTop: 40, // More space from reviews above
-    marginBottom: 20,
+    marginBottom: 50,
     paddingHorizontal: 8, // Wider card
   },
   container: {
