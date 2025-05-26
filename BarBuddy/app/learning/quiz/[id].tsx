@@ -62,6 +62,13 @@ export default function QuizScreen() {
       }
     }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setSelectedAnswers(new Array(quiz.questions.length).fill(-1));
+    setScore(0);
+  };
   
   if (!quiz) {
     return (
@@ -93,12 +100,23 @@ export default function QuizScreen() {
               : 'You need 70% to pass. Keep learning!'}
           </Text>
           
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.buttonText}>Finish</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.button}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.buttonText}>Back to Learning Hub</Text>
+            </TouchableOpacity>
+            
+            {score < 70 && (
+              <TouchableOpacity 
+                style={[styles.button, styles.retryButton]}
+                onPress={handleTryAgain}
+              >
+                <Text style={[styles.buttonText, styles.retryButtonText]}>Try Again</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -271,5 +289,17 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 32,
+  },
+  buttonContainer: {
+    width: '100%',
+    gap: 12,
+  },
+  retryButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#5c5c9a',
+    borderWidth: 2,
+  },
+  retryButtonText: {
+    color: '#5c5c9a',
   },
 });

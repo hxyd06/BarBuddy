@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LearningHubCard() {
@@ -12,11 +12,7 @@ export default function LearningHubCard() {
   const totalModules = 3;
   const totalQuizzes = 2;
   
-  useEffect(() => {
-    loadProgress();
-  }, []);
-  
-  const loadProgress = async () => {
+  const loadProgress = useCallback(async () => {
     try {
       const modules = await AsyncStorage.getItem('completedModules');
       const quizzes = await AsyncStorage.getItem('completedQuizzes');
@@ -26,7 +22,14 @@ export default function LearningHubCard() {
     } catch (error) {
       console.error('Error loading progress:', error);
     }
-  };
+  }, []);
+  
+  // This hook runs every time the home screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadProgress();
+    }, [loadProgress])
+  );
   
   const getUserLevel = () => {
     const totalCompleted = completedModules.length + completedQuizzes.length;

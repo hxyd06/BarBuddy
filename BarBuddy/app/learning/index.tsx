@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { modules, quizzes } from '@/utils/learningData';
 
@@ -11,11 +11,7 @@ export default function LearningHub() {
   const [completedModules, setCompletedModules] = useState<string[]>([]);
   const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([]);
   
-  useEffect(() => {
-    loadProgress();
-  }, []);
-  
-  const loadProgress = async () => {
+  const loadProgress = useCallback(async () => {
     try {
       const modules = await AsyncStorage.getItem('completedModules');
       const quizzes = await AsyncStorage.getItem('completedQuizzes');
@@ -25,6 +21,42 @@ export default function LearningHub() {
     } catch (error) {
       console.error('Error loading progress:', error);
     }
+  }, []);
+  
+  // This hook runs every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadProgress();
+    }, [loadProgress])
+  );
+
+  const handleResetProgress = () => {
+    Alert.alert(
+      "Reset Progress",
+      "Are you sure? You will lose all progress if you proceed.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('completedModules');
+              await AsyncStorage.removeItem('completedQuizzes');
+              setCompletedModules([]);
+              setCompletedQuizzes([]);
+              Alert.alert("Success", "All progress has been reset.");
+            } catch (error) {
+              console.error('Error resetting progress:', error);
+              Alert.alert("Error", "Failed to reset progress. Please try again.");
+            }
+          }
+        }
+      ]
+    );
   };
   
   const getLevelColor = (level: string) => {
@@ -43,12 +75,16 @@ export default function LearningHub() {
           <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
         </TouchableOpacity>
         <Text style={styles.title}>Learning Hub</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={handleResetProgress} style={styles.resetButton}>
+          <Ionicons name="refresh-outline" size={20} color="#F44336" />
+        </TouchableOpacity>
       </View>
       
       <ScrollView style={styles.content}>
         <View style={styles.progressContainer}>
-          <Text style={styles.sectionTitle}>Your Progress</Text>
+          <View style={styles.progressHeader}>
+            <Text style={styles.sectionTitle}>Your Progress</Text>
+          </View>
           <Text style={styles.progressText}>
             Modules: {completedModules.length}/{modules.length}
           </Text>
@@ -119,6 +155,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#5c5c9a',
   },
+  resetButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+    backgroundColor: '#ffebee',
+  },
   content: {
     flex: 1,
     padding: 16,
@@ -128,6 +172,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginBottom: 20,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
