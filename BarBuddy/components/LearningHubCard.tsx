@@ -9,8 +9,8 @@ export default function LearningHubCard() {
   const [completedModules, setCompletedModules] = useState<string[]>([]);
   const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([]);
   
-  const totalModules = 3;
-  const totalQuizzes = 2;
+  const totalModules = 9; // Updated from 3 to 9
+  const totalQuizzes = 5;  // Updated from 2 to 5
   
   const loadProgress = useCallback(async () => {
     try {
@@ -24,7 +24,6 @@ export default function LearningHubCard() {
     }
   }, []);
   
-  // This hook runs every time the home screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadProgress();
@@ -34,8 +33,8 @@ export default function LearningHubCard() {
   const getUserLevel = () => {
     const totalCompleted = completedModules.length + completedQuizzes.length;
     if (totalCompleted === 0) return 'Beginner';
-    if (totalCompleted <= 2) return 'Beginner';
-    if (totalCompleted <= 4) return 'Intermediate';
+    if (totalCompleted <= 4) return 'Beginner';
+    if (totalCompleted <= 9) return 'Intermediate';
     return 'Advanced';
   };
   

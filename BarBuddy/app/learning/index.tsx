@@ -23,7 +23,6 @@ export default function LearningHub() {
     }
   }, []);
   
-  // This hook runs every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadProgress();
@@ -67,6 +66,26 @@ export default function LearningHub() {
       default: return '#4CAF50';
     }
   };
+
+  const getOverallProgress = () => {
+    const totalItems = modules.length + quizzes.length;
+    const completedItems = completedModules.length + completedQuizzes.length;
+    return (completedItems / totalItems) * 100;
+  };
+
+  const getProgressColor = () => {
+    const progress = getOverallProgress();
+    if (progress < 30) return '#F44336'; // Red
+    if (progress < 70) return '#FF9800'; // Orange
+    return '#4CAF50'; // Green
+  };
+
+  const getProgressLevel = () => {
+    const progress = getOverallProgress();
+    if (progress < 30) return 'Beginner';
+    if (progress < 70) return 'Intermediate';
+    return 'Advanced';
+  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -81,16 +100,66 @@ export default function LearningHub() {
       </View>
       
       <ScrollView style={styles.content}>
+        {/* Enhanced Progress Section */}
         <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.sectionTitle}>Your Progress</Text>
+          <Text style={styles.sectionTitle}>Your Learning Journey</Text>
+          
+          {/* Overall Progress Bar */}
+          <View style={styles.overallProgressSection}>
+            <View style={styles.progressInfo}>
+              <Text style={styles.progressLabel}>Overall Progress</Text>
+              <Text style={[styles.levelText, { color: getProgressColor() }]}>
+                {getProgressLevel()}
+              </Text>
+            </View>
+            <View style={styles.largeProgressBar}>
+              <View 
+                style={[
+                  styles.largeProgressFill, 
+                  { 
+                    width: `${getOverallProgress()}%`,
+                    backgroundColor: getProgressColor()
+                  }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressPercentage}>
+              {Math.round(getOverallProgress())}% Complete
+            </Text>
           </View>
-          <Text style={styles.progressText}>
-            Modules: {completedModules.length}/{modules.length}
-          </Text>
-          <Text style={styles.progressText}>
-            Quizzes: {completedQuizzes.length}/{quizzes.length}
-          </Text>
+
+          {/* Individual Progress Bars */}
+          <View style={styles.individualProgress}>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressLabel}>Modules</Text>
+              <View style={styles.progressBarSmall}>
+                <View 
+                  style={[
+                    styles.progressFillSmall, 
+                    { width: `${(completedModules.length / modules.length) * 100}%` }
+                  ]} 
+                />
+              </View>
+              <Text style={styles.progressCount}>
+                {completedModules.length}/{modules.length}
+              </Text>
+            </View>
+            
+            <View style={styles.progressRow}>
+              <Text style={styles.progressLabel}>Quizzes</Text>
+              <View style={styles.progressBarSmall}>
+                <View 
+                  style={[
+                    styles.progressFillSmall, 
+                    { width: `${(completedQuizzes.length / quizzes.length) * 100}%` }
+                  ]} 
+                />
+              </View>
+              <Text style={styles.progressCount}>
+                {completedQuizzes.length}/{quizzes.length}
+              </Text>
+            </View>
+          </View>
         </View>
         
         <Text style={styles.sectionTitle}>Learning Modules</Text>
@@ -113,7 +182,7 @@ export default function LearningHub() {
           </TouchableOpacity>
         ))}
         
-        <Text style={styles.sectionTitle}>Quizzes</Text>
+        <Text style={styles.sectionTitle}>Knowledge Tests</Text>
         {quizzes.map(quiz => (
           <TouchableOpacity
             key={quiz.id}
@@ -127,9 +196,14 @@ export default function LearningHub() {
               )}
             </View>
             <Text style={styles.cardDescription}>{quiz.description}</Text>
-            <Text style={styles.questionCount}>
-              {quiz.questions.length} questions
-            </Text>
+            <View style={styles.quizInfo}>
+              <View style={[styles.badge, { backgroundColor: getLevelColor(quiz.difficulty) }]}>
+                <Text style={styles.badgeText}>{quiz.difficulty}</Text>
+              </View>
+              <Text style={styles.questionCount}>
+                {quiz.questions.length} questions
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -168,35 +242,93 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   progressContainer: {
-    backgroundColor: '#f0f0f9',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: '#f8f9fa',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#5c5c9a',
+    marginBottom: 16,
+  },
+  overallProgressSection: {
+    marginBottom: 20,
+  },
+  progressInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  progressText: {
+  progressLabel: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#333',
-    marginBottom: 4,
+  },
+  levelText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  largeProgressBar: {
+    height: 12,
+    backgroundColor: '#e9ecef',
+    borderRadius: 6,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  largeProgressFill: {
+    height: '100%',
+    borderRadius: 6,
+  },
+  progressPercentage: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  individualProgress: {
+    gap: 12,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  progressBarSmall: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#e9ecef',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFillSmall: {
+    height: '100%',
+    backgroundColor: '#5c5c9a',
+    borderRadius: 4,
+  },
+  progressCount: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+    minWidth: 40,
+    textAlign: 'right',
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -208,11 +340,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
   },
   cardDescription: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   badge: {
     paddingHorizontal: 8,
@@ -224,6 +358,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '500',
+  },
+  quizInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   questionCount: {
     fontSize: 12,

@@ -14,6 +14,7 @@ export default function QuizScreen() {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
   
   useEffect(() => {
     const foundQuiz = quizzes.find(q => q.id === id);
@@ -24,17 +25,27 @@ export default function QuizScreen() {
   }, [id]);
   
   const handleSelectAnswer = (answerIndex: number) => {
+    if (showAnswerFeedback) return; // Prevent changing answer after feedback is shown
+    
     const newSelectedAnswers = [...selectedAnswers];
     newSelectedAnswers[currentQuestion] = answerIndex;
     setSelectedAnswers(newSelectedAnswers);
   };
   
   const handleNext = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (!showAnswerFeedback) {
+      // First click: Show answer feedback
+      setShowAnswerFeedback(true);
     } else {
-      calculateScore();
-      setShowResult(true);
+      // Second click: Move to next question or finish
+      setShowAnswerFeedback(false);
+      
+      if (currentQuestion < quiz.questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        calculateScore();
+        setShowResult(true);
+      }
     }
   };
   
@@ -68,6 +79,52 @@ export default function QuizScreen() {
     setCurrentQuestion(0);
     setSelectedAnswers(new Array(quiz.questions.length).fill(-1));
     setScore(0);
+    setShowAnswerFeedback(false);
+  };
+
+  const getAnswerStyle = (answerIndex: number) => {
+    const question = quiz.questions[currentQuestion];
+    const isSelected = selectedAnswers[currentQuestion] === answerIndex;
+    const isCorrect = answerIndex === question.correctAnswer;
+    const userSelectedAnswer = selectedAnswers[currentQuestion];
+    
+    if (!showAnswerFeedback) {
+      // Before showing feedback, just show selected state
+      return [
+        styles.answerOption,
+        isSelected && styles.selectedAnswer
+      ];
+    } else {
+      // After showing feedback, highlight correct/incorrect
+      if (isCorrect) {
+        return [styles.answerOption, styles.correctAnswer];
+      } else if (isSelected && !isCorrect) {
+        return [styles.answerOption, styles.wrongAnswer];
+      } else {
+        return [styles.answerOption, styles.fadedAnswer];
+      }
+    }
+  };
+
+  const getAnswerTextStyle = (answerIndex: number) => {
+    const question = quiz.questions[currentQuestion];
+    const isSelected = selectedAnswers[currentQuestion] === answerIndex;
+    const isCorrect = answerIndex === question.correctAnswer;
+    
+    if (!showAnswerFeedback) {
+      return [
+        styles.answerText,
+        isSelected && styles.selectedAnswerText
+      ];
+    } else {
+      if (isCorrect) {
+        return [styles.answerText, styles.correctAnswerText];
+      } else if (isSelected && !isCorrect) {
+        return [styles.answerText, styles.wrongAnswerText];
+      } else {
+        return [styles.answerText, styles.fadedAnswerText];
+      }
+    }
   };
   
   if (!quiz) {
@@ -123,6 +180,7 @@ export default function QuizScreen() {
   }
   
   const question = quiz.questions[currentQuestion];
+  const hasSelectedAnswer = selectedAnswers[currentQuestion] !== -1;
   
   return (
     <SafeAreaView style={styles.container}>
@@ -149,21 +207,41 @@ export default function QuizScreen() {
         </Text>
         <Text style={styles.questionText}>{question.text}</Text>
         
+        {showAnswerFeedback && (
+          <View style={styles.feedbackContainer}>
+            <Text style={styles.feedbackText}>
+              {selectedAnswers[currentQuestion] === question.correctAnswer 
+                ? '✅ Correct!' 
+                : '❌ Incorrect!'}
+            </Text>
+            {selectedAnswers[currentQuestion] !== question.correctAnswer && (
+              <Text style={styles.correctAnswerLabel}>
+                Correct answer: {question.answers[question.correctAnswer]}
+              </Text>
+            )}
+          </View>
+        )}
+        
         {question.answers.map((answer: string, index: number) => (
           <TouchableOpacity
             key={index}
-            style={[
-              styles.answerOption,
-              selectedAnswers[currentQuestion] === index && styles.selectedAnswer
-            ]}
+            style={getAnswerStyle(index)}
             onPress={() => handleSelectAnswer(index)}
+            disabled={showAnswerFeedback}
           >
-            <Text style={[
-              styles.answerText,
-              selectedAnswers[currentQuestion] === index && styles.selectedAnswerText
-            ]}>
-              {answer}
-            </Text>
+            <View style={styles.answerContent}>
+              <Text style={getAnswerTextStyle(index)}>
+                {answer}
+              </Text>
+              {showAnswerFeedback && index === question.correctAnswer && (
+                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              )}
+              {showAnswerFeedback && 
+               selectedAnswers[currentQuestion] === index && 
+               index !== question.correctAnswer && (
+                <Ionicons name="close-circle" size={20} color="#F44336" />
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -172,13 +250,16 @@ export default function QuizScreen() {
         <TouchableOpacity 
           style={[
             styles.button,
-            selectedAnswers[currentQuestion] === -1 && styles.disabledButton
+            !hasSelectedAnswer && styles.disabledButton
           ]}
           onPress={handleNext}
-          disabled={selectedAnswers[currentQuestion] === -1}
+          disabled={!hasSelectedAnswer}
         >
           <Text style={styles.buttonText}>
-            {currentQuestion < quiz.questions.length - 1 ? 'Next' : 'Finish'}
+            {!showAnswerFeedback 
+              ? (currentQuestion < quiz.questions.length - 1 ? 'Next' : 'Finish')
+              : (currentQuestion < quiz.questions.length - 1 ? 'Continue' : 'Finish Quiz')
+            }
           </Text>
         </TouchableOpacity>
       </View>
@@ -227,6 +308,25 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
+  feedbackContainer: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#5c5c9a',
+  },
+  feedbackText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  correctAnswerLabel: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
   answerOption: {
     backgroundColor: '#f0f0f0',
     padding: 16,
@@ -239,13 +339,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8f0fe',
     borderColor: '#5c5c9a',
   },
+  correctAnswer: {
+    backgroundColor: '#e8f5e9',
+    borderColor: '#4CAF50',
+  },
+  wrongAnswer: {
+    backgroundColor: '#ffebee',
+    borderColor: '#F44336',
+  },
+  fadedAnswer: {
+    backgroundColor: '#f5f5f5',
+    opacity: 0.6,
+  },
+  answerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   answerText: {
     fontSize: 16,
     color: '#333',
+    flex: 1,
   },
   selectedAnswerText: {
     color: '#5c5c9a',
     fontWeight: '500',
+  },
+  correctAnswerText: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  wrongAnswerText: {
+    color: '#C62828',
+    fontWeight: '500',
+  },
+  fadedAnswerText: {
+    color: '#999',
   },
   footer: {
     padding: 16,
