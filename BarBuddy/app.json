@@ -1,5 +1,5 @@
 {
- "expo": {
+  "expo": {
     "name": "BarBuddy",
     "slug": "BarBuddy",
     "version": "1.0.0",
@@ -23,7 +23,9 @@
         "NSLocationWhenInUseUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
         "NSLocationAlwaysUsageDescription": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -72,7 +74,8 @@
           "locationAlwaysPermission": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you.",
           "locationWhenInUsePermission": "BarBuddy needs your location to find bars, restaurants, and liquor stores near you."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
