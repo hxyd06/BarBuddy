@@ -10,6 +10,8 @@ export default function LearningHub() {
   const router = useRouter();
   const [completedModules, setCompletedModules] = useState<string[]>([]);
   const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([]);
+  const [showAllModules, setShowAllModules] = useState(false);
+  const [showAllQuizzes, setShowAllQuizzes] = useState(false);
   
   const loadProgress = useCallback(async () => {
     try {
@@ -86,12 +88,61 @@ export default function LearningHub() {
     if (progress < 70) return 'Intermediate';
     return 'Advanced';
   };
+
+  const renderModuleItem = (module: any) => (
+    <TouchableOpacity
+      key={module.id}
+      style={styles.listItem}
+      onPress={() => router.push(`/learning/module/${module.id}`)}
+    >
+      <View style={styles.listItemContent}>
+        <View style={styles.listItemHeader}>
+          <Text style={styles.listItemTitle}>{module.title}</Text>
+          {completedModules.includes(module.id) && (
+            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+          )}
+        </View>
+        <Text style={styles.listItemDescription} numberOfLines={2}>
+          {module.description}
+        </Text>
+        <View style={[styles.levelBadge, { backgroundColor: getLevelColor(module.level) }]}>
+          <Text style={styles.levelBadgeText}>{module.level}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderQuizItem = (quiz: any) => (
+    <TouchableOpacity
+      key={quiz.id}
+      style={styles.listItem}
+      onPress={() => router.push(`/learning/quiz/${quiz.id}`)}
+    >
+      <View style={styles.listItemContent}>
+        <View style={styles.listItemHeader}>
+          <Text style={styles.listItemTitle}>{quiz.title}</Text>
+          {completedQuizzes.includes(quiz.id) && (
+            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+          )}
+        </View>
+        <Text style={styles.listItemDescription} numberOfLines={2}>
+          {quiz.description}
+        </Text>
+        <View style={styles.quizMetadata}>
+          <View style={[styles.levelBadge, { backgroundColor: getLevelColor(quiz.difficulty) }]}>
+            <Text style={styles.levelBadgeText}>{quiz.difficulty}</Text>
+          </View>
+          <Text style={styles.questionCount}>{quiz.questions.length} questions</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
   
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
+          <Ionicons name="arrow-back" size={24} color="#6366f1" />
         </TouchableOpacity>
         <Text style={styles.title}>Learning Hub</Text>
         <TouchableOpacity onPress={handleResetProgress} style={styles.resetButton}>
@@ -99,12 +150,11 @@ export default function LearningHub() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView style={styles.content}>
-        {/* Enhanced Progress Section */}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Overall Progress Section */}
         <View style={styles.progressContainer}>
-          <Text style={styles.sectionTitle}>Your Learning Journey</Text>
+          <Text style={styles.progressTitle}>Your Learning Journey</Text>
           
-          {/* Overall Progress Bar */}
           <View style={styles.overallProgressSection}>
             <View style={styles.progressInfo}>
               <Text style={styles.progressLabel}>Overall Progress</Text>
@@ -124,88 +174,132 @@ export default function LearningHub() {
               />
             </View>
             <Text style={styles.progressPercentage}>
-              {Math.round(getOverallProgress())}% Complete
+              {Math.round(getOverallProgress())}% Complete • {completedModules.length + completedQuizzes.length}/{modules.length + quizzes.length} Items
+            </Text>
+          </View>
+        </View>
+
+        {/* Modules Card */}
+        <View style={styles.sectionCard}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="school" size={28} color="#6366f1" />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Learning Modules</Text>
+                <Text style={styles.cardSubtitle}>
+                  {modules.length} Available • {completedModules.length} Completed
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={styles.expandButton}
+              onPress={() => setShowAllModules(!showAllModules)}
+            >
+              <Text style={styles.expandButtonText}>
+                {showAllModules ? 'Show Less' : 'View All'}
+              </Text>
+              <Ionicons 
+                name={showAllModules ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color="#6366f1" 
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[
+                  styles.progressFill, 
+                  { width: `${(completedModules.length / modules.length) * 100}%` }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {Math.round((completedModules.length / modules.length) * 100)}%
             </Text>
           </View>
 
-          {/* Individual Progress Bars */}
-          <View style={styles.individualProgress}>
-            <View style={styles.progressRow}>
-              <Text style={styles.progressLabel}>Modules</Text>
-              <View style={styles.progressBarSmall}>
-                <View 
-                  style={[
-                    styles.progressFillSmall, 
-                    { width: `${(completedModules.length / modules.length) * 100}%` }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressCount}>
-                {completedModules.length}/{modules.length}
+          {showAllModules && (
+            <View style={styles.expandedContent}>
+              {modules.map(renderModuleItem)}
+            </View>
+          )}
+
+          {!showAllModules && (
+            <View style={styles.previewContent}>
+              <Text style={styles.previewText}>
+                Master bartending fundamentals through comprehensive modules covering tools, techniques, and advanced mixology.
               </Text>
             </View>
-            
-            <View style={styles.progressRow}>
-              <Text style={styles.progressLabel}>Quizzes</Text>
-              <View style={styles.progressBarSmall}>
-                <View 
-                  style={[
-                    styles.progressFillSmall, 
-                    { width: `${(completedQuizzes.length / quizzes.length) * 100}%` }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressCount}>
-                {completedQuizzes.length}/{quizzes.length}
-              </Text>
-            </View>
-          </View>
+          )}
         </View>
-        
-        <Text style={styles.sectionTitle}>Learning Modules</Text>
-        {modules.map(module => (
-          <TouchableOpacity
-            key={module.id}
-            style={styles.card}
-            onPress={() => router.push(`/learning/module/${module.id}`)}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{module.title}</Text>
-              {completedModules.includes(module.id) && (
-                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-              )}
-            </View>
-            <Text style={styles.cardDescription}>{module.description}</Text>
-            <View style={[styles.badge, { backgroundColor: getLevelColor(module.level) }]}>
-              <Text style={styles.badgeText}>{module.level}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-        
-        <Text style={styles.sectionTitle}>Knowledge Tests</Text>
-        {quizzes.map(quiz => (
-          <TouchableOpacity
-            key={quiz.id}
-            style={styles.card}
-            onPress={() => router.push(`/learning/quiz/${quiz.id}`)}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{quiz.title}</Text>
-              {completedQuizzes.includes(quiz.id) && (
-                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-              )}
-            </View>
-            <Text style={styles.cardDescription}>{quiz.description}</Text>
-            <View style={styles.quizInfo}>
-              <View style={[styles.badge, { backgroundColor: getLevelColor(quiz.difficulty) }]}>
-                <Text style={styles.badgeText}>{quiz.difficulty}</Text>
+
+        {/* Quizzes Card */}
+        <View style={styles.sectionCard}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.iconContainer}>
+               <Ionicons name="school" size={28} color="#10b981" />
               </View>
-              <Text style={styles.questionCount}>
-                {quiz.questions.length} questions
+              <View>
+                <Text style={styles.cardTitle}>Knowledge Quizzes</Text>
+                <Text style={styles.cardSubtitle}>
+                  {quizzes.length} Available • {completedQuizzes.length} Completed
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={styles.expandButton}
+              onPress={() => setShowAllQuizzes(!showAllQuizzes)}
+            >
+              <Text style={styles.expandButtonText}>
+                {showAllQuizzes ? 'Show Less' : 'View All'}
+              </Text>
+              <Ionicons 
+                name={showAllQuizzes ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color="#10b981" 
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[
+                  styles.progressFill, 
+                  { 
+                    width: `${(completedQuizzes.length / quizzes.length) * 100}%`,
+                    backgroundColor: '#10b981'
+                  }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {Math.round((completedQuizzes.length / quizzes.length) * 100)}%
+            </Text>
+          </View>
+
+          {showAllQuizzes && (
+            <View style={styles.expandedContent}>
+              {quizzes.map(renderQuizItem)}
+            </View>
+          )}
+
+          {!showAllQuizzes && (
+            <View style={styles.previewContent}>
+              <Text style={styles.previewText}>
+                Test your bartending knowledge with interactive quizzes covering beginner to advanced concepts.
               </Text>
             </View>
-          </TouchableOpacity>
-        ))}
+          )}
+        </View>
+
+        {/* Bottom spacing */}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -214,20 +308,21 @@ export default function LearningHub() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e2e8f0',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5c5c9a',
+    color: '#1e293b',
   },
   resetButton: {
     width: 40,
@@ -235,137 +330,212 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
-    backgroundColor: '#ffebee',
+    backgroundColor: '#fef2f2',
   },
   content: {
     flex: 1,
     padding: 16,
   },
   progressContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 12,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  sectionTitle: {
+  progressTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#5c5c9a',
+    fontWeight: '700',
+    color: '#1e293b',
     marginBottom: 16,
+    textAlign: 'center',
   },
   overallProgressSection: {
-    marginBottom: 20,
+    alignItems: 'center',
   },
   progressInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
     marginBottom: 12,
   },
   progressLabel: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#475569',
   },
   levelText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   largeProgressBar: {
     height: 12,
-    backgroundColor: '#e9ecef',
+    width: '100%',
+    backgroundColor: '#e2e8f0',
     borderRadius: 6,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   largeProgressFill: {
     height: '100%',
     borderRadius: 6,
   },
   progressPercentage: {
-    textAlign: 'center',
     fontSize: 14,
-    color: '#666',
+    color: '#64748b',
     fontWeight: '500',
   },
-  individualProgress: {
-    gap: 12,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  progressBarSmall: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#e9ecef',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFillSmall: {
-    height: '100%',
-    backgroundColor: '#5c5c9a',
-    borderRadius: 4,
-  },
-  progressCount: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-    minWidth: 40,
-    textAlign: 'right',
-  },
-  card: {
+  sectionCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
-  cardDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 20,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  badge: {
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  expandButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+  },
+  expandButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6366f1',
+    marginRight: 4,
+  },
+  progressBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  progressBar: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginRight: 12,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#6366f1',
+    borderRadius: 4,
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    minWidth: 35,
+  },
+  previewContent: {
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  previewText: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  expandedContent: {
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingTop: 16,
+  },
+  listItem: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  listItemContent: {
+    padding: 16,
+  },
+  listItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  listItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    flex: 1,
+  },
+  listItemDescription: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  levelBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  badgeText: {
+  levelBadgeText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  quizInfo: {
+  quizMetadata: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
   },
   questionCount: {
     fontSize: 12,
-    color: '#666',
+    color: '#64748b',
+    fontWeight: '500',
   },
 });

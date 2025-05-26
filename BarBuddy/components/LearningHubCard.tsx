@@ -17,10 +17,14 @@ export default function LearningHubCard() {
       const modules = await AsyncStorage.getItem('completedModules');
       const quizzes = await AsyncStorage.getItem('completedQuizzes');
       
-      if (modules) setCompletedModules(JSON.parse(modules));
-      if (quizzes) setCompletedQuizzes(JSON.parse(quizzes));
+      // KEY FIX: Always set state, whether data exists or not
+      setCompletedModules(modules ? JSON.parse(modules) : []);
+      setCompletedQuizzes(quizzes ? JSON.parse(quizzes) : []);
     } catch (error) {
       console.error('Error loading progress:', error);
+      // On error, reset to empty arrays
+      setCompletedModules([]);
+      setCompletedQuizzes([]);
     }
   }, []);
   
@@ -96,7 +100,7 @@ export default function LearningHubCard() {
           
           <View style={styles.actionRow}>
             <Ionicons name="arrow-forward-circle" size={20} color="#6366f1" />
-            <Text style={styles.actionText}>Tap to continue your bartending journey</Text>
+            <Text style={styles.actionText}>Tap to continue</Text>
           </View>
         </View>
       </TouchableOpacity>
