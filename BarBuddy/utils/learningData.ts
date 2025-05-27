@@ -273,6 +273,54 @@ export const quizzes = [
   },
   {
     id: 'quiz-2',
+    title: 'Bar Setup & Safety Fundamentals',
+    description: 'Essential knowledge for setting up your bar workspace safely and efficiently.',
+    difficulty: 'beginner',
+    questions: [
+      {
+        text: 'What should you do FIRST when starting your bartending shift?',
+        answers: ['Make drinks immediately', 'Check inventory and prep workspace', 'Clean all glasses', 'Set up music'],
+        correctAnswer: 1
+      },
+      {
+        text: 'How should fresh citrus be stored for optimal freshness?',
+        answers: ['In the freezer', 'In a cool, dry place', 'In direct sunlight', 'In hot water'],
+        correctAnswer: 1
+      },
+      {
+        text: 'What is the most important rule for bar hygiene?',
+        answers: ['Wash hands frequently', 'Clean as you go', 'Separate clean and dirty areas', 'All of the above'],
+        correctAnswer: 3
+      },
+      {
+        text: 'Which ice type is best for most standard cocktails?',
+        answers: ['Crushed ice', 'Standard cubes', 'Large format ice', 'No ice'],
+        correctAnswer: 1
+      },
+      {
+        text: 'What does "mise en place" mean in bartending?',
+        answers: ['French cocktail recipe', 'Everything in its place', 'Mixing technique', 'Type of garnish'],
+        correctAnswer: 1
+      },
+      {
+        text: 'How should you handle broken glass behind the bar?',
+        answers: ['Pick up by hand', 'Use a broom and dustpan', 'Leave it for later', 'Use a wet towel'],
+        correctAnswer: 1
+      },
+      {
+        text: 'What temperature should most spirits be stored at?',
+        answers: ['Frozen', 'Room temperature', 'Hot temperature', 'Refrigerated'],
+        correctAnswer: 1
+      },
+      {
+        text: 'Which garnish prep should be done fresh daily?',
+        answers: ['Olives', 'Citrus wheels and twists', 'Cherries', 'Salt rim'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 'quiz-3',
     title: 'Cocktail Balance & Techniques',
     description: 'Challenge your understanding of cocktail balance, mixing methods, and flavor profiles.',
     difficulty: 'intermediate',
@@ -320,7 +368,7 @@ export const quizzes = [
     ]
   },
   {
-    id: 'quiz-3',
+    id: 'quiz-4',
     title: 'Advanced Ingredients & Infusions',
     description: 'Test your knowledge of specialty ingredients, infusions, and advanced preparation methods.',
     difficulty: 'intermediate',
@@ -352,7 +400,7 @@ export const quizzes = [
       },
       {
         text: 'How should herb infusions be handled to prevent bitterness?',
-answers: ['Steep longer', 'Use more herbs', 'Steep for shorter time', 'Use hot water'],
+        answers: ['Steep longer', 'Use more herbs', 'Steep for shorter time', 'Use hot water'],
         correctAnswer: 2
       },
       {
@@ -368,7 +416,7 @@ answers: ['Steep longer', 'Use more herbs', 'Steep for shorter time', 'Use hot w
     ]
   },
   {
-    id: 'quiz-4',
+    id: 'quiz-5',
     title: 'Modern Mixology Techniques',
     description: 'Challenge yourself with advanced molecular techniques and modern bartending methods.',
     difficulty: 'advanced',
@@ -416,7 +464,7 @@ answers: ['Steep longer', 'Use more herbs', 'Steep for shorter time', 'Use hot w
     ]
   },
   {
-    id: 'quiz-5',
+    id: 'quiz-6',
     title: 'Professional Bar Management',
     description: 'Test your knowledge of bar operations, cost control, and professional service standards.',
     difficulty: 'advanced',

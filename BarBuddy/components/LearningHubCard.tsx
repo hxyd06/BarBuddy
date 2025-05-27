@@ -10,7 +10,7 @@ export default function LearningHubCard() {
   const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([]);
   
   const totalModules = 9;
-  const totalQuizzes = 5;
+  const totalQuizzes = 6;
   
   const loadProgress = useCallback(async () => {
     try {

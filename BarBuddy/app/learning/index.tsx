@@ -242,7 +242,7 @@ export default function LearningHub() {
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderLeft}>
               <View style={styles.iconContainer}>
-               <Ionicons name="school" size={28} color="#10b981" />
+               <Ionicons name="book" size={28} color="#10b981" />
               </View>
               <View>
                 <Text style={styles.cardTitle}>Knowledge Quizzes</Text>
