@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { quizzes } from '@/utils/learningData';
+import { isQuizUnlocked, getLockedQuizMessage, isLastQuiz, finalCompletionMessage } from '@/utils/completionMessages';
 
 export default function QuizScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,14 +16,34 @@ export default function QuizScreen() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
+  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>([]);
+  const [showLockedMessage, setShowLockedMessage] = useState(false);
+  const [showFinalCompletion, setShowFinalCompletion] = useState(false);
   
   useEffect(() => {
-    const foundQuiz = quizzes.find(q => q.id === id);
-    if (foundQuiz) {
-      setQuiz(foundQuiz);
-      setSelectedAnswers(new Array(foundQuiz.questions.length).fill(-1));
-    }
+    checkQuizAccess();
   }, [id]);
+
+  const checkQuizAccess = async () => {
+    try {
+      const completed = await AsyncStorage.getItem('completedQuizzes');
+      const completedArray = completed ? JSON.parse(completed) : [];
+      setCompletedQuizzes(completedArray);
+
+      if (!isQuizUnlocked(id as string, completedArray)) {
+        setShowLockedMessage(true);
+        return;
+      }
+
+      const foundQuiz = quizzes.find(q => q.id === id);
+      if (foundQuiz) {
+        setQuiz(foundQuiz);
+        setSelectedAnswers(new Array(foundQuiz.questions.length).fill(-1));
+      }
+    } catch (error) {
+      console.error('Error checking quiz access:', error);
+    }
+  };
   
   const handleSelectAnswer = (answerIndex: number) => {
     if (showAnswerFeedback) return; // Prevent changing answer after feedback is shown
@@ -67,6 +88,11 @@ export default function QuizScreen() {
         if (!completedArray.includes(id)) {
           completedArray.push(id);
           await AsyncStorage.setItem('completedQuizzes', JSON.stringify(completedArray));
+          
+          // Check if this is the final quiz
+          if (isLastQuiz(id as string)) {
+            setShowFinalCompletion(true);
+          }
         }
       } catch (error) {
         console.error('Error saving quiz completion:', error);
@@ -86,7 +112,6 @@ export default function QuizScreen() {
     const question = quiz.questions[currentQuestion];
     const isSelected = selectedAnswers[currentQuestion] === answerIndex;
     const isCorrect = answerIndex === question.correctAnswer;
-    const userSelectedAnswer = selectedAnswers[currentQuestion];
     
     if (!showAnswerFeedback) {
       // Before showing feedback, just show selected state
@@ -127,10 +152,79 @@ export default function QuizScreen() {
     }
   };
   
+  // Show locked message
+  if (showLockedMessage) {
+    const lockedMessage = getLockedQuizMessage(id as string, completedQuizzes);
+    
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Quiz Locked</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        
+        <View style={styles.lockedContainer}>
+          <Text style={styles.lockedEmoji}>🔒</Text>
+          <Text style={styles.lockedTitle}>{lockedMessage?.title}</Text>
+          <Text style={styles.lockedMessage}>{lockedMessage?.message}</Text>
+          
+          <View style={styles.progressInfo}>
+            <Text style={styles.progressTitle}>Current Progress:</Text>
+            <Text style={styles.progressText}>
+              {lockedMessage?.progress}: {lockedMessage?.currentProgress}
+            </Text>
+          </View>
+          
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Back to Learning Hub</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+  
   if (!quiz) {
     return (
       <SafeAreaView style={styles.container}>
         <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Show final completion message
+  if (showFinalCompletion) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.finalCompletionOverlay}>
+          <View style={styles.finalCompletionModal}>
+            <Text style={styles.finalCompletionEmoji}>{finalCompletionMessage.emoji}</Text>
+            <Text style={styles.finalCompletionTitle}>{finalCompletionMessage.title}</Text>
+            <Text style={styles.finalCompletionSubtitle}>{finalCompletionMessage.subtitle}</Text>
+            
+            <View style={styles.summarySection}>
+              <Text style={styles.summaryTitle}>Your Journey:</Text>
+              {finalCompletionMessage.summary.map((item, index) => (
+                <Text key={index} style={styles.summaryItem}>✅ {item}</Text>
+              ))}
+            </View>
+            
+            <View style={styles.masteredSection}>
+              <Text style={styles.masteredTitle}>You've mastered:</Text>
+              {finalCompletionMessage.mastered.map((item, index) => (
+                <Text key={index} style={styles.masteredItem}>• {item}</Text>
+              ))}
+            </View>
+            
+            <Text style={styles.finalMessage}>{finalCompletionMessage.finalMessage}</Text>
+            
+            <TouchableOpacity style={styles.finalBackButton} onPress={() => router.push('/learning')}>
+              <Text style={styles.finalBackButtonText}>Back to Learning Hub</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
@@ -149,7 +243,7 @@ export default function QuizScreen() {
         <View style={styles.resultContainer}>
           <Text style={styles.scoreText}>{score}%</Text>
           <Text style={styles.resultTitle}>
-            {score >= 70 ? 'Well Done!' : 'Try Again'}
+            {score >= 70 ? 'Well Done!' : 'Keep Learning!'}
           </Text>
           <Text style={styles.resultDescription}>
             {score >= 70 
@@ -430,5 +524,154 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#5c5c9a',
+  },
+  // LOCKED QUIZ STYLES
+  lockedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  lockedEmoji: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
+  lockedTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+  },
+  lockedMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  progressInfo: {
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  progressTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 4,
+  },
+  progressText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6366f1',
+  },
+  backButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // FINAL COMPLETION STYLES
+  finalCompletionOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  finalCompletionModal: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+    width: '100%',
+    maxWidth: 420,
+  },
+  finalCompletionEmoji: {
+    fontSize: 72,
+    marginBottom: 16,
+  },
+  finalCompletionTitle: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: '#1e293b',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  finalCompletionSubtitle: {
+    fontSize: 16,
+    color: '#6366f1',
+    marginBottom: 24,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  summarySection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  summaryItem: {
+    fontSize: 15,
+    color: '#10b981',
+    marginBottom: 6,
+    fontWeight: '600',
+  },
+  masteredSection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  masteredTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  masteredItem: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  finalMessage: {
+    fontSize: 15,
+    color: '#374151',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+    fontStyle: 'italic',
+  },
+  finalBackButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 16,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  finalBackButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });

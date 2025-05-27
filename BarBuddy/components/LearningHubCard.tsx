@@ -68,9 +68,6 @@ export default function LearningHubCard() {
               <Ionicons name="school" size={28} color="#fff" />
               <Text style={styles.title}>Learning Hub</Text>
             </View>
-            <View style={[styles.levelBadge, { backgroundColor: getLevelColor() }]}>
-              <Text style={styles.levelText}>{getUserLevel()}</Text>
-            </View>
           </View>
         </View>
 

@@ -5,19 +5,21 @@ import { useEffect, useState, ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { modules } from '@/utils/learningData';
+import { moduleCompletionMessages } from '@/utils/completionMessages';
 
 export default function ModuleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [module, setModule] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState(false);
-  
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+
   useEffect(() => {
     const foundModule = modules.find(m => m.id === id);
     setModule(foundModule);
     checkIfCompleted();
   }, [id]);
-  
+
   const checkIfCompleted = async () => {
     try {
       const completed = await AsyncStorage.getItem('completedModules');
@@ -29,7 +31,7 @@ export default function ModuleScreen() {
       console.error('Error checking completion status:', error);
     }
   };
-  
+
   const handleComplete = async () => {
     if (id && !isCompleted) {
       try {
@@ -38,11 +40,18 @@ export default function ModuleScreen() {
         completedArray.push(id);
         await AsyncStorage.setItem('completedModules', JSON.stringify(completedArray));
         setIsCompleted(true);
+        setShowCompletionModal(true);
       } catch (error) {
         console.error('Error marking module as complete:', error);
       }
+    } else {
+      router.push('/learning');
     }
-    router.back();
+  };
+
+  const handleBackToHub = () => {
+    setShowCompletionModal(false);
+    router.push('/learning');
   };
 
   const getLevelColor = (level: string) => {
@@ -54,20 +63,11 @@ export default function ModuleScreen() {
     }
   };
 
-  const getSectionIcon = (index: number): ComponentProps<typeof Ionicons>['name'] => {
-    const icons: ComponentProps<typeof Ionicons>['name'][] = [
-      'hammer-outline', 'wine-outline', 'construct-outline', 
-      'flask-outline', 'school-outline', 'trophy-outline',
-      'book-outline', 'bulb-outline', 'star-outline'
-    ];
-    return icons[index] || 'book-outline';
-  };
-
   const getSectionEmoji = (index: number) => {
     const emojis = ['🔨', '🥃', '⚙️', '🧪', '📚', '🏆', '📖', '💡', '⭐'];
     return emojis[index] || '📖';
   };
-  
+
   if (!module) {
     return (
       <SafeAreaView style={styles.container}>
@@ -77,12 +77,45 @@ export default function ModuleScreen() {
       </SafeAreaView>
     );
   }
-  
+
+  // Show completion modal
+  if (showCompletionModal && id) {
+    const completionData = moduleCompletionMessages[id as keyof typeof moduleCompletionMessages];
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.completionModal}>
+            <Text style={styles.completionEmoji}>{completionData?.emoji || '🎉'}</Text>
+            <Text style={styles.completionTitle}>Module Complete!</Text>
+            <Text style={styles.completionSubtitle}>{completionData?.title}</Text>
+
+            <View style={styles.learnedSection}>
+              <Text style={styles.learnedTitle}>What you learned:</Text>
+              {completionData?.learned.map((item, index) => (
+                <Text key={index} style={styles.learnedItem}>• {item}</Text>
+              ))}
+            </View>
+
+            <View style={styles.nextStepSection}>
+              <Text style={styles.nextStepTitle}>🚀 Next Step:</Text>
+              <Text style={styles.nextStepText}>{completionData?.nextStep}</Text>
+            </View>
+
+            <TouchableOpacity style={styles.modalBackButton} onPress={handleBackToHub}>
+              <Text style={styles.backButtonText}>Back to Learning Hub</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Clean Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.push('/learning')} style={styles.headerBackButton}>
           <Ionicons name="arrow-back" size={24} color="#6366f1" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
@@ -99,7 +132,7 @@ export default function ModuleScreen() {
           )}
         </View>
       </View>
-      
+
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
@@ -123,7 +156,7 @@ export default function ModuleScreen() {
               {/* Section Content */}
               <View style={styles.sectionContent}>
                 <Text style={styles.sectionText}>{section.text}</Text>
-                
+
                 {/* Enhanced Pro Tip */}
                 {section.tips && (
                   <View style={styles.tipContainer}>
@@ -142,10 +175,10 @@ export default function ModuleScreen() {
         {/* Bottom Spacing */}
         <View style={{ height: 100 }} />
       </ScrollView>
-      
+
       {/* Clean Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, isCompleted && styles.completedButton]}
           onPress={handleComplete}
         >
@@ -197,7 +230,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backButton: {
+  headerBackButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -389,6 +422,102 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     marginLeft: 10,
+    letterSpacing: 0.5,
+  },
+  // COMPLETION MODAL STYLES
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  completionModal: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+    width: '100%',
+    maxWidth: 400,
+  },
+  completionEmoji: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  completionTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  completionSubtitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#6366f1',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  learnedSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  learnedTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  learnedItem: {
+    fontSize: 15,
+    color: '#64748b',
+    marginBottom: 6,
+    lineHeight: 22,
+  },
+  nextStepSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  nextStepTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  nextStepText: {
+    fontSize: 15,
+    color: '#6366f1',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  availableQuizzes: {
+    marginTop: 8,
+  },
+  quizItem: {
+    fontSize: 14,
+    color: '#10b981',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  modalBackButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 16,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
     letterSpacing: 0.5,
   },
 });

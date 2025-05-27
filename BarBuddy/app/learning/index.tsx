@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { modules, quizzes } from '@/utils/learningData';
+import { isQuizUnlocked } from '@/utils/completionMessages';
 
 export default function LearningHub() {
   const router = useRouter();
@@ -18,8 +19,8 @@ export default function LearningHub() {
       const modules = await AsyncStorage.getItem('completedModules');
       const quizzes = await AsyncStorage.getItem('completedQuizzes');
       
-      if (modules) setCompletedModules(JSON.parse(modules));
-      if (quizzes) setCompletedQuizzes(JSON.parse(quizzes));
+      setCompletedModules(modules ? JSON.parse(modules) : []);
+      setCompletedQuizzes(quizzes ? JSON.parse(quizzes) : []);
     } catch (error) {
       console.error('Error loading progress:', error);
     }
@@ -89,6 +90,14 @@ export default function LearningHub() {
     return 'Advanced';
   };
 
+  const handleQuizClick = (quizId: string) => {
+    if (isQuizUnlocked(quizId, completedQuizzes)) {
+      router.push(`/learning/quiz/${quizId}`);
+    } else {
+      router.push(`/learning/quiz/${quizId}`); // Will show locked message
+    }
+  };
+
   const renderModuleItem = (module: any) => (
     <TouchableOpacity
       key={module.id}
@@ -112,31 +121,61 @@ export default function LearningHub() {
     </TouchableOpacity>
   );
 
-  const renderQuizItem = (quiz: any) => (
-    <TouchableOpacity
-      key={quiz.id}
-      style={styles.listItem}
-      onPress={() => router.push(`/learning/quiz/${quiz.id}`)}
-    >
-      <View style={styles.listItemContent}>
-        <View style={styles.listItemHeader}>
-          <Text style={styles.listItemTitle}>{quiz.title}</Text>
-          {completedQuizzes.includes(quiz.id) && (
-            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-          )}
-        </View>
-        <Text style={styles.listItemDescription} numberOfLines={2}>
-          {quiz.description}
-        </Text>
-        <View style={styles.quizMetadata}>
-          <View style={[styles.levelBadge, { backgroundColor: getLevelColor(quiz.difficulty) }]}>
-            <Text style={styles.levelBadgeText}>{quiz.difficulty}</Text>
+  const renderQuizItem = (quiz: any) => {
+    const isUnlocked = isQuizUnlocked(quiz.id, completedQuizzes);
+    const isCompleted = completedQuizzes.includes(quiz.id);
+    
+    return (
+      <TouchableOpacity
+        key={quiz.id}
+        style={[
+          styles.listItem, 
+          !isUnlocked && styles.lockedListItem
+        ]}
+        onPress={() => handleQuizClick(quiz.id)}
+      >
+        <View style={styles.listItemContent}>
+          <View style={styles.listItemHeader}>
+            <View style={styles.quizTitleContainer}>
+              {!isUnlocked && (
+                <Ionicons name="lock-closed" size={16} color="#94a3b8" style={styles.lockIcon} />
+              )}
+              <Text style={[
+                styles.listItemTitle,
+                !isUnlocked && styles.lockedTitle
+              ]}>
+                {quiz.title}
+              </Text>
+            </View>
+            {isCompleted && (
+              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+            )}
           </View>
-          <Text style={styles.questionCount}>{quiz.questions.length} questions</Text>
+          <Text style={[
+            styles.listItemDescription,
+            !isUnlocked && styles.lockedDescription
+          ]} numberOfLines={2}>
+            {quiz.description}
+          </Text>
+          <View style={styles.quizMetadata}>
+            <View style={[
+              styles.levelBadge, 
+              { backgroundColor: getLevelColor(quiz.difficulty) },
+              !isUnlocked && styles.lockedBadge
+            ]}>
+              <Text style={styles.levelBadgeText}>{quiz.difficulty}</Text>
+            </View>
+            <Text style={[
+              styles.questionCount,
+              !isUnlocked && styles.lockedText
+            ]}>
+              {quiz.questions.length} questions
+            </Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -158,9 +197,6 @@ export default function LearningHub() {
           <View style={styles.overallProgressSection}>
             <View style={styles.progressInfo}>
               <Text style={styles.progressLabel}>Overall Progress</Text>
-              <Text style={[styles.levelText, { color: getProgressColor() }]}>
-                {getProgressLevel()}
-              </Text>
             </View>
             <View style={styles.largeProgressBar}>
               <View 
@@ -496,6 +532,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  lockedListItem: {
+    backgroundColor: '#f1f5f9',
+    opacity: 0.7,
+    borderColor: '#cbd5e1',
+  },
   listItemContent: {
     padding: 16,
   },
@@ -505,11 +546,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  quizTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  lockIcon: {
+    marginRight: 8,
+  },
   listItemTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1e293b',
     flex: 1,
+  },
+  lockedTitle: {
+    color: '#94a3b8',
   },
   listItemDescription: {
     fontSize: 14,
@@ -517,11 +569,17 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
+  lockedDescription: {
+    color: '#94a3b8',
+  },
   levelBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
+  },
+  lockedBadge: {
+    backgroundColor: '#cbd5e1',
   },
   levelBadgeText: {
     color: '#fff',
@@ -537,5 +595,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     fontWeight: '500',
+  },
+  lockedText: {
+    color: '#94a3b8',
   },
 });
