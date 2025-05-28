@@ -63,16 +63,22 @@ If the drink you would like to suggest is not in the list, try again.
             if (checkDrinkValid) {
                 setSuggestedDrink(drink);
             } else {
-                console.log("Random drink generated.");
-                const randomIndex = Math.floor(Math.random() * cocktails.length);
-                const randomDrink = cocktails[randomIndex];
-                setSuggestedDrink(randomDrink.name);
+                setSuggestedDrink('error');
             }
-
         } catch (error) {
             console.error('Error generating drink suggestion:', error);
         }
     };
+
+    //Function to handle random drink
+  const handleRandomDrink = () => {
+    //Generate random index of drink list
+    const randomIndex = Math.floor(Math.random() * cocktails.length);
+    const randomDrink = cocktails[randomIndex];
+
+    //Go to drink screen
+    router.push(`/drink/${randomDrink.name}`);
+  };
 
   //Fetch all drinks
     useEffect(() => {
@@ -126,7 +132,17 @@ If the drink you would like to suggest is not in the list, try again.
             </TouchableOpacity>
             )}
         </View>
-        {suggestedDrink !== '' && (
+        {suggestedDrink === 'error' && (
+        <View style={styles.viewButton}>
+            <View style={styles.suggestedTextContainer}>
+            <Text style={styles.suggestedText}>No drink could be matched to this meal.</Text>
+            </View>
+            <TouchableOpacity style={styles.button} onPress={() => handleRandomDrink()}>
+                <Text style={styles.buttonText}>See a Random Drink</Text>
+            </TouchableOpacity>
+        </View>
+        )}
+        {suggestedDrink !== '' && suggestedDrink !== 'error' && (
         <View style={styles.viewButton}>
             <View style={styles.suggestedTextContainer}>
             <Text style={styles.suggestedText}>Suggested Drink:</Text>
