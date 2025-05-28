@@ -162,30 +162,45 @@ export default function SettingsScreen() {
 
       {/* Settings Navigation Buttons */}
       <View style={styles.listSection}>
+        {role === 'user' && (
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/onhand')}>
           <Ionicons name="list" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>On-Hand Ingredients</Text>
         </TouchableOpacity>
+        )}
 
+        {role === 'user' && (
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/saved')}>
           <Ionicons name="bookmark" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>Saved Drinks</Text>
         </TouchableOpacity>
+        )}
 
+        {role === 'user' && (
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/reviews')}>
           <Ionicons name="chatbubble-ellipses" size={28} color="#5c5c99" style={styles.listIcon} />
           <Text style={styles.listLabel}>Reviews & Replies</Text>
         </TouchableOpacity>
+        )}
 
+        {role === 'user' && (
         <TouchableOpacity style={styles.listItem} onPress={() => router.push('/settings/preferences')}>
           <Ionicons name="person-circle" size={28} color="#5c5c99" style={styles.listIcon}/>
           <Text style={styles.listLabel}>Edit Preferences</Text>
         </TouchableOpacity>
+        )}
 
         {role === 'business' && (
           <TouchableOpacity style={styles.listItem} onPress={() => router.push('/business/your-listings')}>
             <Ionicons name="storefront" size={28} color="#5c5c99" style={styles.listIcon} />
             <Text style={styles.listLabel}>Your Listings</Text>
+          </TouchableOpacity>
+        )}
+        
+        {role === 'business' && (
+          <TouchableOpacity style={styles.listItem} onPress={() => router.push('/business/promotion/your-promotions')}>
+            <Ionicons name="pricetag" size={28} color="#5c5c99" style={styles.listIcon} />
+            <Text style={styles.listLabel}>Your Promotion</Text>
           </TouchableOpacity>
         )}
 
