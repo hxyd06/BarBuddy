@@ -64,6 +64,7 @@ export default function Signup() {
         {/* Email Input */}
         <TextInput
           placeholder="Email"
+          placeholderTextColor='#888'
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -74,6 +75,7 @@ export default function Signup() {
         {/* Password Input */}
         <TextInput
           placeholder="Password"
+          placeholderTextColor='#888'
           value={password}
           onChangeText={setPassword}
           secureTextEntry

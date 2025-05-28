@@ -44,16 +44,6 @@ export default function HomeScreen() {
   }
 };
 
-  const handleRandomDrink = () => {
-    if (drinks.length === 0) return;
-
-    const randomIndex = Math.floor(Math.random() * drinks.length);
-    const randomDrink = drinks[randomIndex];
-
-    router.push(`/drink/${encodeURIComponent(randomDrink.name)}`);
-    console.log(randomDrink.name);
-  };
-
   const generateRandomTip = async () => {
     try {
       const promptIdeas = [
@@ -160,10 +150,13 @@ export default function HomeScreen() {
           </View>
         )}
 
+<<<<<<< HEAD
         <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
           <Text style={styles.randomButtonText}>Surprise Me</Text>
         </TouchableOpacity>
 
+=======
+>>>>>>> Meal-drink-suggestion
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
             <Text style={styles.savedHeader}>Your Recent Saved Drinks</Text>
@@ -375,6 +368,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#666',
   },
+<<<<<<< HEAD
   randomButton: {
     backgroundColor: '#5c5c99',
     padding: 16,
@@ -403,4 +397,6 @@ businessButtonText: {
   color: '#5c5c9a',
   fontWeight: '500'
 },
+=======
+>>>>>>> Meal-drink-suggestion
 });
