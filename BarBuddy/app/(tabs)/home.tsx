@@ -7,6 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
+  type Cocktail = {
+    name: string;
+    image: string;
+    views: number;
+  };
+
   const [username, setUsername] = useState<string | null>(null);
   const [randomTip, setRandomTip] = useState<string>('');
   const [savedDrinks, setSavedDrinks] = useState<any[]>([]);
@@ -14,6 +20,8 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const [drinks, setDrinks] = useState<any[]>([]);
+  const [randomTopDrink, setRandomTopDrink] = useState<Cocktail | null>(null);
+
 
   const fetchUsername = async () => {
     try {
@@ -43,6 +51,33 @@ export default function HomeScreen() {
     console.error('Error fetching drinks:', error);
   }
 };
+    const fetchTrendingDrinks = async () => {
+      try {
+      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          name: data.name,
+          image: data.image,
+          views: data.views,
+        };
+      });
+      // Sort by views descending
+      const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
+
+      // Pick top 5
+      const top5 = sortedDrinks.slice(0, 5);
+
+      // Pick a random one from top 5
+      const randomIndex = Math.floor(Math.random() * top5.length);
+      const randomDrink = top5[randomIndex];
+
+      // Save to state
+      setRandomTopDrink(randomDrink);
+    } catch (error) {
+      console.error('Error fetching drinks:', error);
+    }
+  };
 
   const generateRandomTip = async () => {
     try {
@@ -108,7 +143,7 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([fetchUsername(), generateRandomTip(), fetchSavedDrinks(), fetchRecentReviews(), fetchDrinks()]).finally(() => {
+    Promise.all([fetchUsername(), generateRandomTip(), fetchTrendingDrinks(), fetchSavedDrinks(), fetchRecentReviews(), fetchDrinks()]).finally(() => {
       setRefreshing(false);
     });
   }, []);
@@ -127,6 +162,17 @@ export default function HomeScreen() {
         />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
+      <View style={styles.banner}>
+          <TouchableOpacity>
+  <Text>Trending Drink:</Text>
+  {randomTopDrink ? (
+    <Text>{randomTopDrink.name}</Text>
+  ) : (
+    <Text>Loading...</Text>
+  )}
+  </TouchableOpacity>
+
+        </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -136,7 +182,7 @@ export default function HomeScreen() {
           <Text style={styles.welcomeText}>Welcome, {username}</Text>
         )}
 
-        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
+        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('../business/listings')}>
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
           </TouchableOpacity>
 
@@ -223,6 +269,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 10,
+  },
+  banner: {
+    backgroundColor: '#f0f0f9',
+    borderRadius: 8,
+    padding: 10,
+    width: '100%',
   },
   scrollContent: {
     paddingTop: 20,
