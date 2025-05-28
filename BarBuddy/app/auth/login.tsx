@@ -57,6 +57,7 @@ export default function Login() {
       <Text style={styles.subtitle}>Your pocket mixologist</Text>
       <TextInput
         placeholder="Email"
+        placeholderTextColor='#888'
         value={email}
         onChangeText={setEmail}
         style={styles.input}
@@ -66,6 +67,7 @@ export default function Login() {
 
       <TextInput
         placeholder="Password"
+        placeholderTextColor='#888'
         value={password}
         onChangeText={setPassword}
         secureTextEntry

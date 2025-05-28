@@ -102,6 +102,7 @@ export default function ExploreScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
                 placeholder="Search for drinks..."
+                placeholderTextColor='#888'
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={[styles.searchInput, { flex: 1 }]}
@@ -142,7 +143,6 @@ export default function ExploreScreen() {
             />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.subheader}>Categories</Text>
 
             {/* Available and Trending Drinks */}
               <View style={styles.topButtons}>
@@ -155,8 +155,20 @@ export default function ExploreScreen() {
                   <Text style={styles.categoryText}>Trending Drinks</Text>
                 </TouchableOpacity>
               </View>
+              {/* Drink/Meal Suggestion and Random Drinks */}
+              <View style={styles.topButtons}>
+                <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('../explore/meal-suggestion')}>
+                  <Image source={require('../../assets/images/mealsuggestion.jpg')} style={styles.categoryImage}/>
+                  <Text style={styles.categoryText}>Match Drink to a Meal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.topCategoryCard} onPress={handleRandomDrink}>
+                  <Image source={require('../../assets/images/surpriseme.jpg')} style={styles.categoryImage}/>
+                  <Text style={styles.categoryText}>Surprise Me</Text>
+                </TouchableOpacity>
+              </View>
 
               {/* Categories section */}
+              <Text style={styles.subheader}>Categories</Text>
               <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id}
@@ -199,10 +211,6 @@ export default function ExploreScreen() {
                   </TouchableOpacity>
                 )}
               />
-              {/* Random Drinks Button*/}
-              <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
-                <Text style={styles.randomButtonText}>Surprise Me</Text>
-              </TouchableOpacity>
           </ScrollView>
           )}
         </View>
@@ -314,19 +322,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     borderRadius: 10,
     marginBottom: 5,
-  },
-  randomButton: {
-    backgroundColor: '#5c5c99',
-    padding: 12,
-    borderRadius: 10,
-    marginTop: -50,
-    marginBottom: 30,
-    marginHorizontal: 20,
-    alignItems: 'center',
-  },
-  randomButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
 });

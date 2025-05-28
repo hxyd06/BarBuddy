@@ -44,16 +44,6 @@ export default function HomeScreen() {
   }
 };
 
-  const handleRandomDrink = () => {
-    if (drinks.length === 0) return;
-
-    const randomIndex = Math.floor(Math.random() * drinks.length);
-    const randomDrink = drinks[randomIndex];
-
-    router.push(`/drink/${encodeURIComponent(randomDrink.name)}`);
-    console.log(randomDrink.name);
-  };
-
   const generateRandomTip = async () => {
     try {
       const promptIdeas = [
@@ -162,10 +152,6 @@ export default function HomeScreen() {
             <Text style={styles.tipText}>{randomTip}</Text>
           </View>
         )}
-
-        <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
-          <Text style={styles.randomButtonText}>Surprise Me</Text>
-        </TouchableOpacity>
 
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
