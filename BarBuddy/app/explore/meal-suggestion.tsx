@@ -1,4 +1,6 @@
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -54,6 +56,7 @@ If the drink you would like to suggest is not in the list, try again.
 
     const handleMealSubmit = async () => {
         try {
+          Keyboard.dismiss();
             const prompt = buildPrompt(cocktails, enteredMeal);
             const result = await model.generateContent(prompt);
             const drink = result.response.text().trim();
@@ -80,30 +83,32 @@ If the drink you would like to suggest is not in the list, try again.
     router.push(`/drink/${randomDrink.name}`);
   };
 
-  //Fetch all drinks
-    useEffect(() => {
-  const fetchDrinks = async () => {
-    try {
-      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
-      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        //Fetch name, image, viewcount
-        return {
-        id: docSnap.id,
-          name: data.name,
-          image: data.image,
-          views: data.views,
-        };
-      });
-      setCocktails(cocktailsData);
-    } catch (error) {
-      console.error('Error fetching drinks:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchDrinks();
-}, []);
+  useFocusEffect(
+  useCallback(() => {
+    const fetchDrinks = async () => {
+      setLoading(true);
+      try {
+        const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+        const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            name: data.name,
+            image: data.image,
+            views: data.views,
+          };
+        });
+        setCocktails(cocktailsData);
+      } catch (error) {
+        console.error('Error fetching drinks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrinks();
+  }, [])
+);
 
   return (
     <SafeAreaView style={styles.container}>
