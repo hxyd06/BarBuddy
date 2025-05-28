@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 
 export default function BusinessDetails() {
@@ -11,6 +11,7 @@ export default function BusinessDetails() {
   const router = useRouter();
   const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [promotions, setPromotions] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -20,6 +21,7 @@ export default function BusinessDetails() {
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           setBusiness(snap.data());
+          fetchPromotions(id as string);
         } else {
           setBusiness(null);
         }
@@ -31,6 +33,23 @@ export default function BusinessDetails() {
     };
     fetchBusiness();
   }, [id]);
+
+  const fetchPromotions = async (businessId: string) => {
+    try {
+      const promoQuery = query(
+        collection(db, "promotions"),
+        where("businessId", "==", businessId)
+      );
+      const promoSnap = await getDocs(promoQuery);
+      const promoList = promoSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPromotions(promoList);
+    } catch (err) {
+      console.error("Error fetching promotions for business:", err);
+    }
+  };
 
   const handleWebsitePress = (website: string) => {
     let url = website;
@@ -148,6 +167,53 @@ export default function BusinessDetails() {
               </Text>
             </TouchableOpacity>
           )}
+          {promotions.length > 0 && (
+            <View style={{ marginTop: 30 }}>
+              <Text style={styles.heading}>Current Promotions</Text>
+              {promotions.map((promo) => (
+                <TouchableOpacity
+                  key={promo.id}
+                  style={styles.promotionCard}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/business/promotion/[id]",
+                      params: { id: promo.id },
+                    })
+                  }
+                >
+                  <View style={styles.promotionImageContainer}>
+                    {promo.imageURL ? (
+                      <Image
+                        source={{ uri: promo.imageURL }}
+                        style={styles.promotionImage}
+                      />
+                    ) : (
+                      <Ionicons
+                        name="pricetag"
+                        size={28}
+                        color="#999"
+                      />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.promotionTitle}>{promo.title}</Text>
+                    <Text style={styles.promotionDesc}>{promo.description}</Text>
+                    {promo.startDate && promo.endDate && (
+                      <Text style={styles.promotionDates}>
+                        {new Date(
+                          promo.startDate.seconds * 1000
+                        ).toLocaleDateString()}{" "}
+                        -{" "}
+                        {new Date(
+                          promo.endDate.seconds * 1000
+                        ).toLocaleDateString()}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -228,5 +294,43 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontSize: 16,
     marginBottom: 16,
+  },
+   promotionCard: {
+    flexDirection: "row",
+    backgroundColor: "#f5f5fc",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  promotionImageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#eee",
+  },
+  promotionImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  promotionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  promotionDesc: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 2,
+  },
+  promotionDates: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 2,
   },
 });

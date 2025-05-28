@@ -122,8 +122,8 @@ export default function PromotionsScreen() {
         <TouchableOpacity
           onPress={() =>
             router.push({
-              pathname: "/business/[id]",
-              params: { id: item.businessId },
+              pathname: "/business/promotion/[id]",
+              params: { id: item.id },
             })
           }
           disabled={!item.businessId}
