@@ -11,6 +11,7 @@ export default function PromotionsScreen() {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState< "newest" | "oldest" | "endingSoon" >("newest");
 
   const router = useRouter();
 
@@ -21,7 +22,7 @@ export default function PromotionsScreen() {
     }
     fetchUserRole();
     fetchPromotions();
-  }, []);
+  }, [sortOrder]);
 
   const fetchUserRole = async () => {
     const user = auth.currentUser;
@@ -42,12 +43,24 @@ export default function PromotionsScreen() {
     setLoading(true);
     try {
       const now = Timestamp.now();
-      const promoQuery = query(
-        collection(db, "promotions"),
-        where("startDate", "<=", now),
-        where("endDate", ">=", now),
-        orderBy("startDate", "desc")
-      );
+      let promoQuery;
+
+      if (sortOrder === "endingSoon") {
+        promoQuery = query(
+          collection(db, "promotions"),
+          where("startDate", "<=", now),
+          where("endDate", ">=", now),
+          orderBy("endDate", "asc")
+        );
+      } else {
+        promoQuery = query(
+          collection(db, "promotions"),
+          where("startDate", "<=", now),
+          where("endDate", ">=", now),
+          orderBy("createdAt", sortOrder === "newest" ? "desc" : "asc")
+        );
+      }
+
       const promoSnap = await getDocs(promoQuery);
 
       const promosWithBusiness = await Promise.all(
@@ -59,18 +72,10 @@ export default function PromotionsScreen() {
             promoData.businessId &&
             typeof promoData.businessId === "string"
           ) {
-            try {
-              const businessRef = doc(db, "businesses", promoData.businessId);
-              const businessDoc = await getDoc(businessRef);
-              if (businessDoc.exists()) {
-                businessData = businessDoc.data();
-              }
-            } catch (err) {
-              console.warn(
-                "Could not load business for promo:",
-                promoDoc.id,
-                err
-              );
+            const businessRef = doc(db, "businesses", promoData.businessId);
+            const businessDoc = await getDoc(businessRef);
+            if (businessDoc.exists()) {
+              businessData = businessDoc.data();
             }
           }
 
@@ -139,8 +144,11 @@ export default function PromotionsScreen() {
           {item.business?.name && (
             <Text style={styles.subText}>From: {item.business.name}</Text>
           )}
-          {item.business?.location && (
-            <Text style={styles.subText}>{item.business.location}</Text>
+          {item.startDate && item.endDate && (
+            <Text style={styles.subText}>
+              {new Date(item.startDate.seconds * 1000).toLocaleDateString()} -{" "}
+              {new Date(item.endDate.seconds * 1000).toLocaleDateString()}
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -191,6 +199,49 @@ export default function PromotionsScreen() {
             <Ionicons name="add-outline" size={24} color="#5c5c99" />
           </TouchableOpacity>
         )}
+      </View>
+
+      <View style={styles.sortRow}>
+        <Text style={styles.sortByText}>Sort by:</Text>
+
+        <TouchableOpacity
+          onPress={() => setSortOrder("newest")}
+          style={styles.sortButton}
+        >
+          <Text
+            style={
+              sortOrder === "newest" ? styles.enabledText : styles.sortText
+            }
+          >
+            Newest
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setSortOrder("oldest")}
+          style={styles.sortButton}
+        >
+          <Text
+            style={
+              sortOrder === "oldest" ? styles.enabledText : styles.sortText
+            }
+          >
+            Oldest
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setSortOrder("endingSoon")}
+          style={styles.sortButton}
+        >
+          <Text
+            style={
+              sortOrder === "endingSoon" ? styles.enabledText : styles.sortText
+            }
+          >
+            Ending Soon
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -275,6 +326,27 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     color: "red",
+    fontWeight: "bold",
+  },
+  sortRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  sortByText: {
+    marginRight: 10,
+    fontWeight: "500",
+    color: "#5c5c99",
+  },
+  sortButton: {
+    marginRight: 10,
+  },
+  sortText: {
+    color: "#5c5c99",
+  },
+  enabledText: {
+    color: "#000",
     fontWeight: "bold",
   },
 });
