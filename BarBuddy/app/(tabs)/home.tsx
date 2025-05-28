@@ -5,6 +5,7 @@ import { db, auth, model } from '@/firebase/firebaseConfig';
 import { collection, doc, getDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
   type Cocktail = {
@@ -162,23 +163,6 @@ export default function HomeScreen() {
         />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
-      {randomTopDrink ? (
-      <View>
-    <View style={styles.banner}>
-      <TouchableOpacity style={{flexDirection: 'row'}} onPress={() => router.push(`../drink/${encodeURIComponent(randomTopDrink.name)}`)}>
-      <Image source={{ uri: randomTopDrink.image }} style={styles.bannerImage} />
-      <Text style={styles.bannerText}>Trending Drink: {'\n'} {randomTopDrink.name}</Text>
-      <View style={{ flexDirection: 'row'}}>
-      <Ionicons name="eye-outline" size={30} color="#555" style={styles.viewsIcon} />
-      <Text style={styles.viewsText}>{randomTopDrink.views}</Text>
-      </View>
-      </TouchableOpacity>
-    </View>
-    </View>
-  ) : (
-    <Text>Loading...</Text>
-  )}
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -190,6 +174,29 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.businessButton} onPress={() => router.push('../business/listings')}>
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
           </TouchableOpacity>
+
+          {randomTopDrink ? (
+  <TouchableOpacity
+    onPress={() => router.push(`../drink/${encodeURIComponent(randomTopDrink.name)}`)}
+    style={styles.trendingContainer}
+  >
+    <Image source={{ uri: randomTopDrink.image }} style={styles.bannerImage} />
+    <LinearGradient
+      colors={['transparent', 'rgba(0,0,0,0.8)']}
+      style={styles.gradientOverlay}
+    />
+    <View style={styles.bannerContent}>
+      <Text style={styles.trendingLabel}>Trending Drink</Text>
+      <Text style={styles.trendingName}>{randomTopDrink.name}</Text>
+      <View style={styles.viewsContainer}>
+        <Ionicons name="eye-outline" size={20} color="#fff" />
+        <Text style={styles.viewsText}>{randomTopDrink.views} views</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+) : (
+  <Text>Loading...</Text>
+)}
 
         {randomTip && (
           <View style={styles.tipBadge}>
@@ -275,24 +282,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 10,
   },
-  banner: {
-    backgroundColor: '#f0f0f9',
-    borderRadius: 8,
+  titleContainer: {
+    position: 'absolute',
+    bottom: 10,
+    left: 20,
     flexDirection: 'row',
-    width: '100%',
+    alignItems: 'center',
   },
-  bannerImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    margin: 10,
-  },
-  bannerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#5c5c9a',
-    marginTop: 10,
-  },
+  titleText: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
   scrollContent: {
     paddingTop: 20,
     alignItems: 'center',
@@ -462,10 +459,55 @@ viewsIcon: {
   marginTop: 20,
   marginLeft: 80,
 },
-viewsText: {
-  fontSize: 14,
-  color: '#555',
-  marginTop: 25,
-  marginLeft: 5,
+trendingContainer: {
+  width: '100%',
+  height: 180,
+  borderRadius: 16,
+  overflow: 'hidden',
+  marginBottom: 20,
 },
+
+bannerImage: {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+},
+
+gradientOverlay: {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  bottom: 0,
+  left: 0,
+},
+bannerContent: {
+  position: 'absolute',
+  bottom: 20,
+  left: 20,
+  right: 20,
+},
+trendingLabel: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 4,
+},
+trendingName: {
+  color: '#fff',
+  fontSize: 26,
+  fontWeight: 'bold',
+},
+
+viewsContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 6,
+},
+
+viewsText: {
+  color: '#fff',
+  fontSize: 14,
+  marginLeft: 6,
+},
+
 });
