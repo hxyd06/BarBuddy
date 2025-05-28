@@ -162,17 +162,22 @@ export default function HomeScreen() {
         />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
-      <View style={styles.banner}>
-          <TouchableOpacity>
-  <Text>Trending Drink:</Text>
-  {randomTopDrink ? (
-    <Text>{randomTopDrink.name}</Text>
+      {randomTopDrink ? (
+      <View>
+    <View style={styles.banner}>
+      <TouchableOpacity style={{flexDirection: 'row'}} onPress={() => router.push(`../drink/${encodeURIComponent(randomTopDrink.name)}`)}>
+      <Image source={{ uri: randomTopDrink.image }} style={styles.bannerImage} />
+      <Text style={styles.bannerText}>Trending Drink: {'\n'} {randomTopDrink.name}</Text>
+      <View style={{ flexDirection: 'row'}}>
+      <Ionicons name="eye-outline" size={30} color="#555" style={styles.viewsIcon} />
+      <Text style={styles.viewsText}>{randomTopDrink.views}</Text>
+      </View>
+      </TouchableOpacity>
+    </View>
+    </View>
   ) : (
     <Text>Loading...</Text>
   )}
-  </TouchableOpacity>
-
-        </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -273,8 +278,20 @@ const styles = StyleSheet.create({
   banner: {
     backgroundColor: '#f0f0f9',
     borderRadius: 8,
-    padding: 10,
+    flexDirection: 'row',
     width: '100%',
+  },
+  bannerImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    margin: 10,
+  },
+  bannerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#5c5c9a',
+    marginTop: 10,
   },
   scrollContent: {
     paddingTop: 20,
@@ -440,5 +457,15 @@ businessButtonText: {
   fontSize: 16,
   color: '#5c5c9a',
   fontWeight: '500'
+},
+viewsIcon: {
+  marginTop: 20,
+  marginLeft: 80,
+},
+viewsText: {
+  fontSize: 14,
+  color: '#555',
+  marginTop: 25,
+  marginLeft: 5,
 },
 });
