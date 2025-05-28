@@ -138,8 +138,10 @@ export default function HomeScreen() {
 
         <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
-          </TouchableOpacity>
-
+        </TouchableOpacity>
+        <TouchableOpacity testID = "Promotions"style={styles.businessButton} onPress={() => router.push('/business/promotion/promotions')}>
+            <Text style={styles.businessButtonText}>Promotions!</Text>
+        </TouchableOpacity>
         {randomTip && (
           <View style={styles.tipBadge}>
             <View style={styles.tipHeader}>
