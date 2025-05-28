@@ -143,7 +143,6 @@ export default function ExploreScreen() {
             />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.subheader}>Categories</Text>
 
             {/* Available and Trending Drinks */}
               <View style={styles.topButtons}>
@@ -169,6 +168,7 @@ export default function ExploreScreen() {
               </View>
 
               {/* Categories section */}
+              <Text style={styles.subheader}>Categories</Text>
               <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id}
