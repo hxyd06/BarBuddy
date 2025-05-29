@@ -1,0 +1,33 @@
+appId: com.hxyd06.BarBuddy
+---
+
+# Acceptance test 2: Edit Reply: 
+  # Press edit on the reply to edit the original reply message. 
+  # Press Submit to save changes.
+  - tapOn:
+      id: edit-reply-button
+
+  - tapOn:
+      id: reply-input
+  - eraseText
+  - inputText: Edited reply for Maestro test.
+
+  - tapOn:
+      id: submit-reply-button
+
+  # Pass: Reply is visibile
+  # Fail: Reply is not visible (skips if test passes)
+  - runFlow:
+      when:
+        visible: "Edited reply for Maestro test."
+      commands:
+        - assertVisible: "Edited reply for Maestro test."
+
+  - runFlow:
+      when:
+        notVisible: "Edited reply for Maestro test."
+      commands:
+        - tapOn:
+            id: force-fail-edit
+
+            

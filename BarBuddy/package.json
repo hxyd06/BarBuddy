@@ -9,7 +9,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "e2e:android:build": "cd android && ./gradlew assembleDebug",
+    "e2e:android:install": "adb install android/app/build/outputs/apk/debug/app-debug.apk",
+    "e2e:android:run": "maestro test ./e2e/android/android-flow.yaml"
   },
   "jest": {
     "preset": "jest-expo",
@@ -23,7 +26,7 @@
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-firebase/app": "^22.1.0",
     "@react-native-firebase/auth": "^22.1.0",
-    "@react-native-picker/picker": "^2.11.0",
+    "@react-native-picker/picker": "2.9.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/native": "^7.1.6",
     "@react-navigation/stack": "^7.2.10",

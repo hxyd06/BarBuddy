@@ -123,7 +123,7 @@ export default function ReviewsScreen() {
 
   // Function to submit a reply to a specific review.
   const submitReply = async (reviewId: string) => {
-    const user = auth.currentUser;
+    const user = auth.currentUser;  
     if (!user || !drinkId || !replyText.trim()) return;
 
     const replyData: Reply = {
@@ -133,29 +133,55 @@ export default function ReviewsScreen() {
       createdAt: Timestamp.now(),
     };
 
+    const nestedRef = collection(db, 'cocktails', drinkId, 'reviews', reviewId, 'replies');
+
     try {
-      const nestedRef = collection(db, 'cocktails', drinkId, 'reviews', reviewId, 'replies');
-      const addedReplyRef = await addDoc(nestedRef, replyData);
+      if (editingReplyId) {
+        await setDoc(doc(nestedRef, editingReplyId), replyData, { merge: true });
 
-      await addDoc(collection(db, 'allReplies'), {
-        ...replyData,
-        userId: user.uid,
-        drinkId,
-        drinkName: drink,
-        reviewId,
-        comment: replyData.text,
-        nestedReplyId: addedReplyRef.id,
-      });
+        const allRepliesQuery = query(
+          collection(db, 'allReplies'),
+          where('userId', '==', user.uid),
+          where('drinkId', '==', drinkId),
+          where('reviewId', '==', reviewId),
+          where('nestedReplyId', '==', editingReplyId)
+        );
+        const snapshot = await getDocs(allRepliesQuery);
+        for (const docSnap of snapshot.docs) {
+          await setDoc(doc(db, 'allReplies', docSnap.id), {
+            ...replyData,
+            userId: user.uid,
+            drinkId,
+            drinkName: drink,
+            reviewId,
+            comment: replyData.text,
+            nestedReplyId: editingReplyId,
+          }, { merge: true });
+        }
 
-      setReplyText(''); // Clear the reply input field
-      setReplyingTo(null); // Reset replying state
+        setEditingReplyId(null);
+      } else {
+        const addedReplyRef = await addDoc(nestedRef, replyData);
+        await addDoc(collection(db, 'allReplies'), {
+          ...replyData,
+          userId: user.uid,
+          drinkId,
+          drinkName: drink,
+          reviewId,
+          comment: replyData.text,
+          nestedReplyId: addedReplyRef.id,
+        });
+      }
+
+      setReplyText('');
+      setReplyingTo(null);
     } catch (error) {
-      console.error('Error submitting reply:', error); // Log any errors during the reply submission process
+      console.error('Error submitting reply:', error);
     }
   };
 
   // Function to submit a new review or update an existing review.
-  const submitReview = async () => {
+  const submitReview = async () => { 
     const user = auth.currentUser;
     if (!user || !drinkId || rating === 0 || !reviewText.trim()) return;
 
@@ -201,12 +227,12 @@ export default function ReviewsScreen() {
     }
   };
 
-  // Function to delete a reply from Firestore.
+  //Function to delete a reply from Firestore.
   const deleteReply = async (reviewId: string, replyId: string) => {
     try {
       await deleteDoc(doc(db, 'cocktails', drinkId, 'reviews', reviewId, 'replies', replyId));
     } catch (error) {
-      console.error('Error deleting reply:', error); // Log any errors during reply deletion
+      console.error('Error deleting reply:', error);
     }
   };
 
@@ -235,7 +261,7 @@ export default function ReviewsScreen() {
         </View>
       )}
 
-      <TouchableOpacity onPress={() => setActiveThread(activeThread === item.id ? null : item.id!)}>
+      <TouchableOpacity testID={`toggle-replies-${item.id}`} onPress={() => setActiveThread(activeThread === item.id ? null : item.id!)}>
         <View style={styles.repliesContainer}>
           <Ionicons 
             name={activeThread === item.id ? 'chevron-up-outline' : 'chevron-down-outline'} 
@@ -264,10 +290,17 @@ export default function ReviewsScreen() {
               <Text style={{ marginVertical: 4 }}>{reply.text}</Text>
               {auth.currentUser?.uid === reply.uid && (
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                  <TouchableOpacity onPress={() => { setReplyText(reply.text); setReplyingTo(item.id!); setEditingReplyId(reply.id!); }}>
+                  <TouchableOpacity 
+                    testID="edit-reply-button" 
+                    onPress={() => { setReplyText(reply.text); setReplyingTo(item.id!); setEditingReplyId(reply.id!); }}
+                  >
                     <Text style={{ color: '#5c5c99', fontWeight: 'bold', marginRight: 16 }}>Edit</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteReply(item.id!, reply.id!)}>
+
+                  <TouchableOpacity 
+                    testID="delete-reply-button" 
+                    onPress={() => deleteReply(item.id!, reply.id!)}
+                  >
                     <Text style={{ color: 'red', fontWeight: 'bold' }}>Delete</Text>
                   </TouchableOpacity>
                 </View>
@@ -275,6 +308,7 @@ export default function ReviewsScreen() {
             </View>
           ))}
           <TextInput
+            testID="reply-input"
             ref={inputRef}
             value={replyText}
             onChangeText={setReplyText}
@@ -283,7 +317,7 @@ export default function ReviewsScreen() {
             style={styles.input}
             multiline
           />
-          <TouchableOpacity onPress={() => submitReply(item.id!)} style={styles.submitButton}>
+          <TouchableOpacity testID="submit-reply-button" onPress={() => submitReply(item.id!)} style={styles.submitButton}>
             <Text style={styles.submitText}>Submit Reply</Text>
           </TouchableOpacity>
         </View>

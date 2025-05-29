@@ -1,0 +1,22 @@
+appId: com.hxyd06.BarBuddy
+---
+
+# Acceptance test 3: Delete Reply: 
+# Press delete on the reply to remove the reply from the review thread.
+- tapOn:
+    id: delete-reply-button
+
+# Pass: Reply is not visible, deleting reply was successful
+# Fail: Reply is visible, deleting reply was unsuccessful (skips if test passes)
+- runFlow:
+    when:
+      notVisible: "Edited reply for Maestro test."
+    commands:
+      - assertNotVisible: "Edited reply for Maestro test."
+
+- runFlow:
+    when:
+      visible: "Edited reply for Maestro test."
+    commands:
+      - tapOn:
+          id: force-fail-delete

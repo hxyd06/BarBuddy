@@ -1,0 +1,31 @@
+appId: com.hxyd06.BarBuddy
+---
+
+# Acceptance test 1: Submit Reply
+# press the reply button under a review to open the thread.
+# press the input box and type the reply message.
+# press submit to post the reply and view it.
+- tapOn:
+    id: toggle-replies-wzMy7NkJRn6ShFn8yFBj
+- tapOn:
+    id: reply-input
+- inputText: Reply for Maestro test.
+- tapOn:
+    id: submit-reply-button
+
+# Pass: Reply is visible
+- runFlow:
+    when:
+      visible: "Reply for Maestro test."
+    commands:
+      - assertVisible: "Reply for Maestro test."
+
+# Fail: Reply is not visible (skips if it passed)
+- runFlow:
+    when:
+      notVisible: "Reply for Maestro test."
+    commands:
+      - tapOn:
+          id: force-fail-submit
+
+          
