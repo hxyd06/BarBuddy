@@ -44,16 +44,6 @@ export default function HomeScreen() {
   }
 };
 
-  const handleRandomDrink = () => {
-    if (drinks.length === 0) return;
-
-    const randomIndex = Math.floor(Math.random() * drinks.length);
-    const randomDrink = drinks[randomIndex];
-
-    router.push(`/drink/${encodeURIComponent(randomDrink.name)}`);
-    console.log(randomDrink.name);
-  };
-
   const generateRandomTip = async () => {
     try {
       const promptIdeas = [
@@ -130,6 +120,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('../../assets/icons/BarBuddy-icon.png')} // adjust if needed
+          style={styles.icon}
+          resizeMode="contain"
+        />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
 
@@ -141,6 +136,12 @@ export default function HomeScreen() {
           <Text style={styles.welcomeText}>Welcome, {username}</Text>
         )}
 
+        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
+            <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
+        </TouchableOpacity>
+        <TouchableOpacity testID = "Promotions"style={styles.businessButton} onPress={() => router.push('/business/promotion/promotions')}>
+            <Text style={styles.businessButtonText}>Promotions!</Text>
+        </TouchableOpacity>
         {randomTip && (
           <View style={styles.tipBadge}>
             <View style={styles.tipHeader}>
@@ -150,10 +151,6 @@ export default function HomeScreen() {
             <Text style={styles.tipText}>{randomTip}</Text>
           </View>
         )}
-
-          <TouchableOpacity style={styles.randomButton} onPress={handleRandomDrink}>
-            <Text style={styles.randomButtonText}>Surprise Me</Text>
-          </TouchableOpacity>
 
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
@@ -234,17 +231,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 10,
     marginBottom: 10,
   },
-  welcomeText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#5c5c9a',
-    textAlign: 'center',
+  icon: {
+    width: 36,
+    height: 36,
+    marginRight: 10,
+    tintColor: '#5c5c99',
   },
   screenTitle: {
     fontSize: 28,
+    fontWeight: 'bold',
+    color: '#5c5c9a',
+  },
+  welcomeText: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#5c5c9a',
     textAlign: 'center',
@@ -371,4 +376,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 18,
   },
+  businessButton: {
+  backgroundColor: '#f5f5fc',
+  padding: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: '#5c5c9a',
+  width: '100%'
+},
+businessButtonText: {
+  fontSize: 16,
+  color: '#5c5c9a',
+  fontWeight: '500'
+},
 });

@@ -75,6 +75,16 @@ export default function ExploreScreen() {
     { id: 'brunch', name: 'Brunch', image: 'https://firebasestorage.googleapis.com/v0/b/barbuddy-fc0b7.firebasestorage.app/o/mood-event-images%2Fbrunch.jpg?alt=media&token=59f4cca2-f766-4d67-91de-731c569647cb' },
   ];
 
+  //Function to handle random drink
+  const handleRandomDrink = () => {
+    //Generate random index of drink list
+    const randomIndex = Math.floor(Math.random() * drinks.length);
+    const randomDrink = drinks[randomIndex];
+
+    //Go to drink screen
+    router.push(`/drink/${randomDrink.name}`);
+  };
+
   return (
     <KeyboardSafeWrapper>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -92,6 +102,7 @@ export default function ExploreScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
                 placeholder="Search for drinks..."
+                placeholderTextColor='#888'
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={[styles.searchInput, { flex: 1 }]}
@@ -132,7 +143,6 @@ export default function ExploreScreen() {
             />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.subheader}>Categories</Text>
 
             {/* Available and Trending Drinks */}
               <View style={styles.topButtons}>
@@ -145,8 +155,20 @@ export default function ExploreScreen() {
                   <Text style={styles.categoryText}>Trending Drinks</Text>
                 </TouchableOpacity>
               </View>
+              {/* Drink/Meal Suggestion and Random Drinks */}
+              <View style={styles.topButtons}>
+                <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('../explore/meal-suggestion')}>
+                  <Image source={require('../../assets/images/mealsuggestion.jpg')} style={styles.categoryImage}/>
+                  <Text style={styles.categoryText}>Match Drink to a Meal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.topCategoryCard} onPress={handleRandomDrink}>
+                  <Image source={require('../../assets/images/surpriseme.jpg')} style={styles.categoryImage}/>
+                  <Text style={styles.categoryText}>Surprise Me</Text>
+                </TouchableOpacity>
+              </View>
 
               {/* Categories section */}
+              <Text style={styles.subheader}>Categories</Text>
               <FlatList
                 data={categories}
                 keyExtractor={(item) => item.id}
@@ -189,7 +211,7 @@ export default function ExploreScreen() {
                   </TouchableOpacity>
                 )}
               />
-            </ScrollView>
+          </ScrollView>
           )}
         </View>
       </SafeAreaView>
