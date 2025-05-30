@@ -45,13 +45,13 @@ export default function ModuleScreen() {
         console.error('Error marking module as complete:', error);
       }
     } else {
-      router.push('/learning');
+      router.replace('/learning');
     }
   };
 
   const handleBackToHub = () => {
     setShowCompletionModal(false);
-    router.push('/learning');
+    router.replace('/learning');
   };
 
   const getLevelColor = (level: string) => {
@@ -115,7 +115,7 @@ export default function ModuleScreen() {
     <SafeAreaView style={styles.container}>
       {/* Clean Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('/learning')} style={styles.headerBackButton}>
+        <TouchableOpacity onPress={() => router.replace('/learning')} style={styles.headerBackButton}>
           <Ionicons name="arrow-back" size={24} color="#6366f1" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>

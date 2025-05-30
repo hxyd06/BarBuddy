@@ -159,7 +159,7 @@ export default function QuizScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.replace('/learning')}>
             <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
           </TouchableOpacity>
           <Text style={styles.title}>Quiz Locked</Text>
@@ -178,7 +178,7 @@ export default function QuizScreen() {
             </Text>
           </View>
           
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/learning')}>
             <Text style={styles.backButtonText}>Back to Learning Hub</Text>
           </TouchableOpacity>
         </View>
@@ -220,7 +220,7 @@ export default function QuizScreen() {
             
             <Text style={styles.finalMessage}>{finalCompletionMessage.finalMessage}</Text>
             
-            <TouchableOpacity style={styles.finalBackButton} onPress={() => router.push('/learning')}>
+            <TouchableOpacity style={styles.finalBackButton} onPress={() => router.replace('/learning')}>
               <Text style={styles.finalBackButtonText}>Back to Learning Hub</Text>
             </TouchableOpacity>
           </View>
@@ -233,7 +233,7 @@ export default function QuizScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.replace('/learning')}>
             <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
           </TouchableOpacity>
           <Text style={styles.title}>Quiz Results</Text>
@@ -254,7 +254,7 @@ export default function QuizScreen() {
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={styles.button}
-              onPress={() => router.back()}
+              onPress={() => router.replace('/learning')}
             >
               <Text style={styles.buttonText}>Back to Learning Hub</Text>
             </TouchableOpacity>
@@ -279,7 +279,7 @@ export default function QuizScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.replace('/learning')}>
           <Ionicons name="arrow-back" size={24} color="#5c5c9a" />
         </TouchableOpacity>
         <Text style={styles.title}>{quiz.title}</Text>

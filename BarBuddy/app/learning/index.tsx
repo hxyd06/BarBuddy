@@ -180,7 +180,7 @@ export default function LearningHub() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+       <TouchableOpacity onPress={() => router.replace('/home')}>
           <Ionicons name="arrow-back" size={24} color="#6366f1" />
         </TouchableOpacity>
         <Text style={styles.title}>Learning Hub</Text>
