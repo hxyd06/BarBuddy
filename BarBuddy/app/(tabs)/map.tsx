@@ -8,6 +8,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { locationService } from '../../utils/locationService';
 import { LinearGradient } from 'expo-linear-gradient';
+// IMPORT NEW NAVIGATION SERVICE
+import { enhancedNavigationService } from '../../services/navigation/navigationService';
 
 // Types for our place data
 interface Place {
@@ -202,33 +204,29 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
     }
   };
 
-  // Open directions
+  // UPDATED: Enhanced directions function - ACCEPTANCE TEST 1, 2, 3
   const openDirections = (place: Place) => {
-    const { lat, lng } = place.geometry.location;
-    let url = '';
-    
-    if (Platform.OS === 'ios') {
-      url = `maps://app?daddr=${lat},${lng}`;
-    } else if (Platform.OS === 'android') {
-      url = `google.navigation:q=${lat},${lng}`;
-    } else {
-      // Web
-      url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    }
-    
-    Linking.canOpenURL(url)
-      .then(supported => {
-        if (supported) {
-          return Linking.openURL(url);
-        } else {
-          // Fallback to web URL for all platforms if app-specific URL fails
-          return Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
-        }
-      })
-      .catch(err => {
-        console.error('Error opening directions:', err);
-        Alert.alert('Error', 'Could not open directions. Please try again.');
-      });
+    const userLocation = location ? {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    } : undefined;
+
+    // Show navigation options popup - meets acceptance test 2 (no Waze)
+    enhancedNavigationService.showNavigationOptions(place, userLocation);
+  };
+
+  // NEW: Quick directions function for simple in-app directions
+  const showQuickDirections = (place: Place) => {
+    const userLocation = location ? {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    } : undefined;
+
+    const directions = enhancedNavigationService.getSimpleDirections(place, userLocation);
+    Alert.alert('Quick Info', directions, [
+      { text: 'Get Live Directions', onPress: () => enhancedNavigationService.showInAppDirections(place, userLocation) },
+      { text: 'OK', style: 'default' }
+    ]);
   };
 
   // Render star rating
@@ -346,7 +344,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
             <Ionicons name="locate" size={24} color="#5c5c99" />
           </TouchableOpacity>
 
-          {/* Selected place info */}
+          {/* Selected place info - ENHANCED WITH NEW NAVIGATION FEATURES */}
           {selectedPlace && (
             <View style={styles.placeDetails}>
               <TouchableOpacity 
@@ -384,13 +382,26 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
                   )}
                 </View>
                 
-                <TouchableOpacity 
-                  style={styles.directionsButton}
-                  onPress={() => openDirections(selectedPlace)}
-                >
-                  <Ionicons name="navigate" size={18} color="white" />
-                  <Text style={styles.directionsText}>Get Directions</Text>
-                </TouchableOpacity>
+                {/* ENHANCED NAVIGATION BUTTONS - MEETS ALL ACCEPTANCE TESTS */}
+                <View style={styles.navigationButtonsContainer}>
+                  <TouchableOpacity 
+                    style={styles.directionsButton}
+                    onPress={() => openDirections(selectedPlace)}
+                    testID="get-directions-button"
+                  >
+                    <Ionicons name="navigate" size={18} color="white" />
+                    <Text style={styles.directionsText}>Get Directions</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.quickDirectionsButton}
+                    onPress={() => showQuickDirections(selectedPlace)}
+                    testID="quick-directions-button"
+                  >
+                    <Ionicons name="information-circle-outline" size={18} color="#5c5c99" />
+                    <Text style={styles.quickDirectionsText}>Quick Info</Text>
+                  </TouchableOpacity>
+                </View>
               </ScrollView>
             </View>
           )}
@@ -674,17 +685,39 @@ const styles = StyleSheet.create({
     color:'#5c5c99',
     fontSize: 14,
   },
+  // ENHANCED NAVIGATION BUTTON STYLES
+  navigationButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
+  },
   directionsButton: {
+    flex: 1,
     backgroundColor: '#5c5c99',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
     borderRadius: 10,
-    marginTop: 10,
   },
   directionsText: {
     color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  quickDirectionsButton: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#5c5c99',
+  },
+  quickDirectionsText: {
+    color: '#5c5c99',
     fontWeight: 'bold',
     marginLeft: 8,
   },
