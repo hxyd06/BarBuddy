@@ -238,7 +238,7 @@ export default function DrinkDetailScreen() {
         
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="white" />
+          <Ionicons testID="back-button" name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
 
         {/* Save button and View Saved button */}
@@ -260,7 +260,7 @@ export default function DrinkDetailScreen() {
           </View>
         </View>
         
-        {/* Drink immage and rating */}
+        {/* Drink image and rating */}
         <View>
           {drinkData.strDrinkThumb ? (
             <Image source={{ uri: drinkData.strDrinkThumb }} style={styles.headerImage} />

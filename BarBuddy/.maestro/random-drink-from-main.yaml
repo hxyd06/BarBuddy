@@ -1,0 +1,10 @@
+appId: com.hxyd06.BarBuddy #App ID
+
+---
+#Click the random drink button
+- tapOn: "Surprise Me"
+#Check that a recipe is showing by making sure ingredients title visible
+- assertVisible: "Ingredients"
+#Check that Surprise Me button is no longer visible to confirm navigation was successful
+- assertNotVisible: "Surprise Me"
+

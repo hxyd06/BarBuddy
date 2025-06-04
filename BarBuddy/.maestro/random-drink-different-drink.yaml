@@ -1,0 +1,26 @@
+appId: com.hxyd06.BarBuddy #App ID
+
+---
+
+#First, show a random drink
+- tapOn: "Surprise Me"
+#Confirm navigation to drink was successful
+- assertVisible: "Ingredients"
+- assertNotVisible: "Surprise Me"
+#Take screenshot of first drink
+- takeScreenshot: first-drink
+
+#Navigate back to the explore page
+- tapOn:
+    id: "back-button"
+
+#Show a second random drink
+- tapOn: "Surprise Me"
+#Confirm navigation to drink was successful
+- assertVisible: "Ingredients"
+- assertNotVisible: "Surprise Me"
+
+#Take screenshot of second drink
+- takeScreenshot: second-drink
+
+#Need to manually compare screenshots 

@@ -11,13 +11,17 @@ buildscript {
         ndkVersion = "26.1.10909125"
     }
     repositories {
+        maven {
+            url("https://registry.npmjs.org/expo-module-gradle-plugin/maven")
+        }
         google()
         mavenCentral()
     }
     dependencies {
-        classpath('com.android.tools.build:gradle')
+        classpath('com.android.tools.build:gradle:8.0.0')
         classpath('com.facebook.react:react-native-gradle-plugin')
-        classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("expo.modules:expo-module-gradle-plugin:1.7.1")
     }
 }
 
