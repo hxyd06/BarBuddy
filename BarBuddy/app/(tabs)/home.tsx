@@ -194,9 +194,9 @@ export default function HomeScreen() {
         { /* Carousel of top 5 trending drinks */ }
         <Carousel
           width={width}
-          height={240}
+          height={300}
           autoPlay={true} 
-          autoPlayInterval={3000}
+          autoPlayInterval={10000}
           data={top5Drinks}
           renderItem={({ item }: { item: Cocktail }) => (
             <TouchableOpacity
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   trendingContainer: {
-    height: 240,
+    height: 300,
     overflow: 'hidden',
     position: 'relative',
   },
