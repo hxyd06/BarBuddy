@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 //Drink Suggestion Page
 export default function MealSuggestionScreen() {
+  //Declare cocktail interface
     type Cocktail = {
     id: string;
     name: string;
@@ -18,10 +19,10 @@ export default function MealSuggestionScreen() {
     views: number;
     };
 
+  //State declarations
   const router = useRouter(); //Router navigation
   const [loading, setLoading] = useState(true);
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
-
   const [enteredMeal, setEnteredMeal] = useState('');
   const [suggestedDrink, setSuggestedDrink] = useState('');
   const [isDrinkValid, setIsDrinkValid] = useState<boolean | null>(null);
@@ -60,39 +61,32 @@ If the drink you would like to suggest is not in the list, try again.
 (Only include the drink name. Nothing else.)`;
 }
 
-    const handleMealSubmit = async () => {
-  try {
-    Keyboard.dismiss();
-    const prompt = buildPrompt(cocktails, enteredMeal);
-    const result = await model.generateContent(prompt);
-    const drinkName = result.response.text().trim();
-    console.log(drinkName);
+  //Handle meal submit function
+  const handleMealSubmit = async () => {
+    try {
+      Keyboard.dismiss(); //Dismiss keyboard on submission
+      const prompt = buildPrompt(cocktails, enteredMeal);
+      const result = await model.generateContent(prompt);
+      const drinkName = result.response.text().trim(); //Get AI response
 
-    const drink = cocktails.find((c) => c.name === drinkName);
-    setSuggestedDrink(drinkName);
+      //Check if suggested drink is in the database
+      const drink = cocktails.find((c) => c.name === drinkName);
+      setSuggestedDrink(drinkName);
 
-    if (drink) {
-      setIsDrinkValid(true);
-      setSelectedDrink(drink); // 👈 Save full drink object
-    } else {
-      setIsDrinkValid(false);
-      setSelectedDrink(null); // clear previous selection
+      //Declare if drink is valid or not
+      if (drink) {
+        setIsDrinkValid(true);
+        setSelectedDrink(drink);
+      } else {
+        setIsDrinkValid(false);
+        setSelectedDrink(null);
+      }
+    } catch (error) {
+      console.error('Error generating drink suggestion:', error);
     }
-  } catch (error) {
-    console.error('Error generating drink suggestion:', error);
-  }
 };
 
-    //Function to handle random drink
-  const handleRandomDrink = () => {
-    //Generate random index of drink list
-    const randomIndex = Math.floor(Math.random() * cocktails.length);
-    const randomDrink = cocktails[randomIndex];
-
-    //Go to drink screen
-    router.push(`/drink/${randomDrink.name}`);
-  };
-
+  //Fetch drinks from database
   useFocusEffect(
   useCallback(() => {
     const fetchDrinks = async () => {
@@ -129,9 +123,9 @@ If the drink you would like to suggest is not in the list, try again.
         </TouchableOpacity>
         <Text style={styles.title}>Match a Drink to Meal</Text>
       </View>
-
       <Text style={styles.descriptionText}>Enter your meal and BarBuddy will suggest an appropriate paired drink.</Text>
 
+    { /* Input box */}
     <View style={styles.inputContainer}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}></View>
         <TextInput 
@@ -142,11 +136,13 @@ If the drink you would like to suggest is not in the list, try again.
             style={[styles.mealInput, { flex: 1 }]}
             />
             {enteredMeal.length > 0 && (
+              /* Submit button  */
             <TouchableOpacity onPress={handleMealSubmit}>
                 <Text style={styles.submitText}>Submit</Text>
             </TouchableOpacity>
             )}
         </View>
+        { /* Drink not in database */ }
         {isDrinkValid == false && (
         <View>
             <View style={styles.suggestedTextContainer}>
@@ -159,13 +155,16 @@ If the drink you would like to suggest is not in the list, try again.
                     const url = `https://www.google.com/search?q=${query}`;
                     Linking.openURL(url);
                   }}>
+                  { /* Searches Google for recipes */ }
                 <Text style={styles.buttonText}>Search The Web</Text>
               </TouchableOpacity>
         </View>
         )}
+        { /* Drink in database */ }
         {suggestedDrink !== '' && isDrinkValid == true && (
         <View>
      {selectedDrink && (
+      /* Link to recipe in-app */
   <TouchableOpacity
     onPress={() => router.push(`../drink/${encodeURIComponent(selectedDrink.name)}`)}
     style={styles.suggestedContainer}
