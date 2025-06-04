@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 //Trending Drinks Screen
 export default function TrendingDrinksScreen() {
     type Cocktail = {
+    id: string;
     name: string;
     image: string;
     views: number;
@@ -27,6 +28,7 @@ export default function TrendingDrinksScreen() {
         const data = docSnap.data();
         //Fetch name, image, viewcount
         return {
+          id: docSnap.id,
           name: data.name,
           image: data.image,
           views: data.views,

@@ -167,6 +167,7 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
               </View>
 
+              <Text style={styles.subheader}>Categories</Text>
               {/* Categories section */}
               <Text style={styles.subheader}>Categories</Text>
               <FlatList
