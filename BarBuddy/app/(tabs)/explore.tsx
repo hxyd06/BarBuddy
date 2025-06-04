@@ -147,7 +147,8 @@ export default function ExploreScreen() {
             />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollContent}>
-
+            
+            <Text style={styles.subheader}>Suggested For You</Text>
             {/* Available and Trending Drinks */}
               <View style={styles.topButtons}>
                 <TouchableOpacity style={styles.categoryCard} onPress={() => router.push('../settings/available-drinks')}>
@@ -170,6 +171,7 @@ export default function ExploreScreen() {
                   <Text style={styles.categoryText}>Surprise Me</Text>
                 </TouchableOpacity>
               </View>
+
               {/* Categories section */}
               <Text style={styles.subheader}>Categories</Text>
               <FlatList
