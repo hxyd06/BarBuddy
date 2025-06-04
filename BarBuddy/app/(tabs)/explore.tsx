@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db, auth } from '@/firebase/firebaseConfig';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { StatusBar } from 'react-native';
+
 const KeyboardSafeWrapper = ({ children }: { children: React.ReactNode }) => (
   <KeyboardAvoidingView
     style={{ flex: 1 }}
@@ -88,6 +90,8 @@ export default function ExploreScreen() {
   return (
     <KeyboardSafeWrapper>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        
         <View style={styles.container}>
 
           {/* Explore header */}

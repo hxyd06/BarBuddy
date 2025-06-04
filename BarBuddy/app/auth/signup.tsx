@@ -4,6 +4,7 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'react-native';
 
 export default function Signup() {
   const router = useRouter();
@@ -56,6 +57,9 @@ export default function Signup() {
   // Render signup form
   return (
     <View style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <View style={styles.centerBlock}>
         {/* Header */}
         <Text style={styles.title}>Create Account</Text>

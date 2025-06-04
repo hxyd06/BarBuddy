@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
 
 // Disable default header
 export const unstable_settings = {
@@ -53,6 +54,9 @@ export default function SavedDrinksScreen() {
   // Render saved drinks list
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+
       {/* Header with back button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>

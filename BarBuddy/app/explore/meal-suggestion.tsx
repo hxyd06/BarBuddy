@@ -8,6 +8,7 @@ import { model, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'react-native';
 
 //Drink Suggestion Page
 export default function MealSuggestionScreen() {
@@ -116,6 +117,9 @@ If the drink you would like to suggest is not in the list, try again.
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('../explore')}>

@@ -5,6 +5,7 @@ import { db, auth } from "@/firebase/firebaseConfig";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from 'react-native';
 
 export default function PromotionsScreen() {
   const [promotions, setPromotions] = useState<any[]>([]);
@@ -124,6 +125,9 @@ export default function PromotionsScreen() {
 
     return (
       <View style={styles.card}>
+        {/* Status bar visible */}
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
         <TouchableOpacity
           onPress={() =>
             router.push({

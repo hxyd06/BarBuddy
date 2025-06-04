@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
 
 export default function OnHandScreen() {
   const router = useRouter();
@@ -58,6 +59,9 @@ export default function OnHandScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#fff" />

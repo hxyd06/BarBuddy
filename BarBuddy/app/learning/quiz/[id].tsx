@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { quizzes } from '@/utils/learningData';
 import { isQuizUnlocked, getLockedQuizMessage, isLastQuiz, finalCompletionMessage } from '@/utils/completionMessages';
+import { StatusBar } from 'react-native';
 
 export default function QuizScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -158,6 +159,9 @@ export default function QuizScreen() {
     
     return (
       <SafeAreaView style={styles.container}>
+        {/* Status bar visible */}
+	      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.replace('/learning')}>
             <Ionicons name="arrow-back" size={24} color="#5c5c9a" />

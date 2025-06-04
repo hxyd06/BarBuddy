@@ -7,7 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/firebase/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-
+import { StatusBar } from 'react-native';
 interface EditableFormData {
   name: string;
   description: string;
@@ -129,6 +129,9 @@ export default function EditListingScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 50}
       >
         <ScrollView contentContainerStyle={styles.container}>
+          {/* Status bar visible */}
+	        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
           <View style={styles.headerRow}>
             <TouchableOpacity
               onPress={() => router.back()}

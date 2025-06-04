@@ -11,6 +11,7 @@ import {
   collection, doc, setDoc, getDocs, addDoc, deleteDoc,
   query, where, Timestamp, onSnapshot, getDoc
 } from 'firebase/firestore';
+import { StatusBar } from 'react-native';
 
 // Interfaces for reviews, replies, and user profiles.
 interface Review {
@@ -296,6 +297,9 @@ export default function ReviewsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={28} color="#fff" />

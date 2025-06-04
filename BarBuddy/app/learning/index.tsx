@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { modules, quizzes } from '@/utils/learningData';
 import { isQuizUnlocked } from '@/utils/completionMessages';
+import { StatusBar } from 'react-native';
 
 export default function LearningHub() {
   const router = useRouter();
@@ -135,6 +136,9 @@ export default function LearningHub() {
         onPress={() => handleQuizClick(quiz.id)}
       >
         <View style={styles.listItemContent}>
+          {/* Status bar visible */}
+	        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+          
           <View style={styles.listItemHeader}>
             <View style={styles.quizTitleContainer}>
               {!isUnlocked && (
@@ -358,7 +362,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#5c5c99',
   },
   resetButton: {
     width: 40,

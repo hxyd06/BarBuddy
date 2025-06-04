@@ -8,6 +8,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { locationService } from '../../utils/locationService';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'react-native';
 
 // Types for our place data
 interface Place {
@@ -286,6 +287,10 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
 
   return (
     <View style={styles.container}>
+      
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <View style={styles.header}>
         <Text style={styles.headerText}>Bars near you</Text>
       </View>
@@ -532,7 +537,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   header: {
-    backgroundColor: '#5c5c99',
+    backgroundColor: '#fff',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 10,
     paddingHorizontal: 20,
@@ -545,7 +550,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   headerText: {
-    color: '#fff',
+    color: '#5c5c99',
     fontSize: 28,
     fontWeight: 'bold',
   },
