@@ -1,4 +1,3 @@
-import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
@@ -6,12 +5,9 @@ import { db, auth, model } from '@/firebase/firebaseConfig';
 import { collection, doc, getDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
 import LearningHubCard from '@/components/LearningHubCard';
-=======
 import { LinearGradient } from 'expo-linear-gradient';
 import Carousel from 'react-native-reanimated-carousel';
->>>>>>> Business-trending
 
 export default function HomeScreen() {
   type Cocktail = {
@@ -65,33 +61,7 @@ export default function HomeScreen() {
     }
   };
 
-<<<<<<< HEAD
  const generateRandomTip = async () => {
-=======
-  //Get the top 5 trending drinks
-  const topTrendingDrinks = async () => {
-    try {
-      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
-      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        return {
-          name: data.name,
-          image: data.image,
-          views: data.views,
-        };
-    });
-    const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
-    const top5 = sortedDrinks.slice(0, 5);
-    setTop5Drinks(top5);
-    setRandomTopDrink(top5[Math.floor(Math.random() * top5.length)]);
-    } catch (error) {
-      console.error('Error fetching trending drinks:', error);
-    }
-  };
-
-  //Use AI to generate a random tip
-  const generateRandomTip = async () => {
->>>>>>> Business-trending
     try {
       const promptIdeas = [
         'Give a clever tip about garnishes that most home bartenders overlook. No more than 3 sentences.',
@@ -104,7 +74,6 @@ export default function HomeScreen() {
         'What’s a useful but lesser-known shaking or stirring technique? Max 3 sentences.',
       ];
       const randomPrompt = promptIdeas[Math.floor(Math.random() * promptIdeas.length)];
-
       const result = await model.generateContent(randomPrompt);
       const tip = result.response.text().trim();
       if (tip) {
@@ -114,6 +83,27 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error('Error generating tip:', error);
+    }
+  };
+
+  //Get top 5 trending drinks
+  const topTrendingDrinks = async () => {
+    try {
+      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          name: data.name,
+          image: data.image,
+          views: data.views,
+        };
+      });
+      const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
+      const top5 = sortedDrinks.slice(0, 5);
+      setTop5Drinks(top5);
+      setRandomTopDrink(top5[Math.floor(Math.random() * top5.length)]);
+    } catch (error) {
+      console.error('Error fetching trending drinks:', error);
     }
   };
 
@@ -158,7 +148,6 @@ export default function HomeScreen() {
   //Refresh
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([fetchUsername(), generateRandomTip(), fetchSavedDrinks(), fetchRecentReviews(), fetchDrinks()]).finally(() => {
     Promise.all([
       fetchUsername(),
       generateRandomTip(),
@@ -179,14 +168,12 @@ export default function HomeScreen() {
       <View style={styles.header}>
         { /* BarBuddy Icon */ }
         <Image
-          source={require('../../assets/icons/BarBuddy-icon.png')} // adjust if needed
           source={require('../../assets/icons/BarBuddy-icon.png')}
           style={styles.icon}
           resizeMode="contain"
         />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
-
       <ScrollView
         /* Swipe down to refresh */
         contentContainerStyle={styles.scrollContent}
@@ -196,7 +183,6 @@ export default function HomeScreen() {
           <Text style={styles.welcomeText}>Welcome, {username}</Text>
         )}
 
-        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
         <TouchableOpacity style={styles.businessButton} onPress={() => router.push('../business/listings')}>
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
         </TouchableOpacity>
