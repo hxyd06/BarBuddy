@@ -143,7 +143,6 @@ export default function ExploreScreen() {
             />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.subheader}>Categories</Text>
 
             {/* Available and Trending Drinks */}
               <View style={styles.topButtons}>
@@ -168,6 +167,7 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
               </View>
 
+              <Text style={styles.subheader}>Categories</Text>
               {/* Categories section */}
               <FlatList
                 data={categories}

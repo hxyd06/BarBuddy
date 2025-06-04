@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Linking } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
@@ -23,6 +23,7 @@ export default function MealSuggestionScreen() {
 
   const [enteredMeal, setEnteredMeal] = useState('');
   const [suggestedDrink, setSuggestedDrink] = useState('');
+  const [isDrinkValid, setIsDrinkValid] = useState<boolean | null>(null);
 
   function buildPrompt(drinks: Cocktail[], meal: string): string {
     const drinkList = drinks.map((drink, i) => `${i + 1}. ${drink.name}`).join('\n');
@@ -40,6 +41,8 @@ Your job is to choose the single best drink from a given list for a given meal. 
 - Only suggest one drink.
 - You must absolutely confirm without any doubt that the drink you suggest is in the below list.
 - Do not include any explanation as to why, just suggest a drink from the list following the constraints.
+- Make sure that your recommendation is a cocktail or drink recipe.
+- Your recommendation must not simply be an echo of the meal itself.
 
 # Available Drinks
 ${drinkList}
@@ -63,10 +66,11 @@ If the drink you would like to suggest is not in the list, try again.
             console.log(drink);
 
             const checkDrinkValid = cocktails.find((c) =>  c.name === drink);
+            setSuggestedDrink(drink);
             if (checkDrinkValid) {
-                setSuggestedDrink(drink);
+                setIsDrinkValid(true);
             } else {
-                setSuggestedDrink('error');
+                setIsDrinkValid(false);
             }
         } catch (error) {
             console.error('Error generating drink suggestion:', error);
@@ -137,17 +141,24 @@ If the drink you would like to suggest is not in the list, try again.
             </TouchableOpacity>
             )}
         </View>
-        {suggestedDrink === 'error' && (
-        <View style={styles.viewButton}>
+        {isDrinkValid == false && (
+        <View>
             <View style={styles.suggestedTextContainer}>
-            <Text style={styles.suggestedText}>No drink could be matched to this meal.</Text>
+              <Text style={styles.suggestedText}>Suggested Drink:</Text>
+              <Text style={styles.suggestedText}>{suggestedDrink}</Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={() => handleRandomDrink()}>
-                <Text style={styles.buttonText}>See a Random Drink</Text>
-            </TouchableOpacity>
+            <View></View>
+              <Text style={styles.descriptionText}>BarBuddy doesn't have a recipe for this drink.</Text>
+              <TouchableOpacity style={styles.button} onPress={() => {
+                    const query = encodeURIComponent(`${suggestedDrink} recipe`);
+                    const url = `https://www.google.com/search?q=${query}`;
+                    Linking.openURL(url);
+                  }}>
+                <Text style={styles.buttonText}>Search The Web</Text>
+              </TouchableOpacity>
         </View>
         )}
-        {suggestedDrink !== '' && suggestedDrink !== 'error' && (
+        {suggestedDrink !== '' && isDrinkValid == true && (
         <View style={styles.viewButton}>
             <View style={styles.suggestedTextContainer}>
             <Text style={styles.suggestedText}>Suggested Drink:</Text>
@@ -190,10 +201,9 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#5c5c99',
     justifyContent: 'flex-end',
-    padding: 32,
+    padding: 25,
     margin: 12,
     borderRadius: 10,
-    marginBottom: 12,
   },
   buttonText: {
     fontWeight: 'bold',
