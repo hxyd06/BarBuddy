@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/firebase/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { StatusBar } from 'react-native';
 
 interface EditablePromotionData {
   title: string;
@@ -123,6 +124,9 @@ export default function EditPromotionScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

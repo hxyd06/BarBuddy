@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getMoodTags } from '@/utils/moodTagger';
+import { StatusBar } from 'react-native';
 
 export const unstable_settings = {
   headerShown: false,
@@ -79,6 +80,9 @@ export default function CategoryDrinksScreen() {
   // Render category/mood screen content
   return (
     <View style={styles.container}>
+      {/* Status bar visible*/}
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+
       {/* Header image and overlay */}
       <View>
         {categoryImage ? (

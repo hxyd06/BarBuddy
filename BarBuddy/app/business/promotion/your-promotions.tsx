@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { auth, db } from "@/firebase/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
-
+import { StatusBar } from 'react-native';
 interface Promotion {
   id: string;
   title: string;
@@ -131,6 +131,9 @@ export default function YourPromotionsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
           <Ionicons name="arrow-back" size={24} color="#5c5c99" />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, ActivityIndicator, ScrollView, Platform, Alert, Linking } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, ActivityIndicator, ScrollView, Platform, Alert, Linking, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -8,7 +8,6 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { locationService } from '../../utils/locationService';
 import { LinearGradient } from 'expo-linear-gradient';
-// IMPORT NEW NAVIGATION SERVICE
 import { enhancedNavigationService } from '../../services/navigation/navigationService';
 
 // Types for our place data
@@ -124,13 +123,12 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching places:', error);
-      // Fallback to demo data if API fails
       setPlaces(generateDemoPlaces(latitude, longitude));
       setIsLoading(false);
     }
   };
 
-  // Generate demo places near the user (fallback if API key not provided)
+  // bars, resturants & alcohol selling places
   const generateDemoPlaces = (latitude: number, longitude: number): Place[] => {
     return [
       {
@@ -204,18 +202,18 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
     }
   };
 
-  // UPDATED: Enhanced directions function - ACCEPTANCE TEST 1, 2, 3
+  // directions  for 1,2&3
   const openDirections = (place: Place) => {
     const userLocation = location ? {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude
     } : undefined;
 
-    // Show navigation options popup - meets acceptance test 2 (no Waze)
+    // Show navigation options popup 
     enhancedNavigationService.showNavigationOptions(place, userLocation);
   };
 
-  // NEW: Quick directions function for simple in-app directions
+  // quick directions function for simple in-app directions
   const showQuickDirections = (place: Place) => {
     const userLocation = location ? {
       latitude: location.coords.latitude,
@@ -284,6 +282,10 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
 
   return (
     <View style={styles.container}>
+      
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <View style={styles.header}>
         <Text style={styles.headerText}>Bars near you</Text>
       </View>
@@ -344,7 +346,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
             <Ionicons name="locate" size={24} color="#5c5c99" />
           </TouchableOpacity>
 
-          {/* Selected place info - ENHANCED WITH NEW NAVIGATION FEATURES */}
+          {/* Selected place info - with navigation features */}
           {selectedPlace && (
             <View style={styles.placeDetails}>
               <TouchableOpacity 
@@ -382,7 +384,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
                   )}
                 </View>
                 
-                {/* ENHANCED NAVIGATION BUTTONS - MEETS ALL ACCEPTANCE TESTS */}
+                {/* improved navigation buttons */}
                 <View style={styles.navigationButtonsContainer}>
                   <TouchableOpacity 
                     style={styles.directionsButton}
@@ -411,7 +413,7 @@ const fetchNearbyPlaces = async (latitude: number, longitude: number) => {
   );
 }
 
-// Light map style with enhanced features
+// Light map style & improved features
 const lightMapStyle = [
   {
     "featureType": "administrative",
@@ -543,7 +545,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   header: {
-    backgroundColor: '#5c5c99',
+    backgroundColor: '#fff',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 10,
     paddingHorizontal: 20,
@@ -556,7 +558,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   headerText: {
-    color: '#fff',
+    color: '#5c5c99',
     fontSize: 28,
     fontWeight: 'bold',
   },
@@ -685,7 +687,7 @@ const styles = StyleSheet.create({
     color:'#5c5c99',
     fontSize: 14,
   },
-  // ENHANCED NAVIGATION BUTTON STYLES
+  // better navigation button styles
   navigationButtonsContainer: {
     flexDirection: 'row',
     gap: 12,

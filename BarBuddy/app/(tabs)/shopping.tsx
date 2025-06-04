@@ -2,6 +2,7 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
 
 const API_KEY = '06ae564d97cb28b2b0a7d3af98e9fc5c629cea2eceb8160062ba32415406c1e3';
 const GRID = {
@@ -138,6 +139,9 @@ export default function ShoppingScreen() {
         // render item with thumbnail, title, price, and source
         return (
             <View style={styles.gridItem}>
+                {/* Status bar visible */}
+                <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
                 <Image source={{ uri: item.thumbnail }} style={styles.thumbnail}/>
 
                 <View style={styles.productDetails}>

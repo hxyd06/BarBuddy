@@ -5,6 +5,7 @@ import { useState, useCallback } from 'react';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
 
 // Screen to display all reviews and replies submitted by the current user
 export default function UserReviewsScreen() {
@@ -83,7 +84,7 @@ export default function UserReviewsScreen() {
   const renderReviewItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}`)}
+      onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}/reviews`)}
     >
       <Text style={styles.drinkName}>{item.drinkName}</Text>
       <Text style={styles.rating}>Rating: {item.rating}/5</Text>
@@ -94,7 +95,7 @@ export default function UserReviewsScreen() {
   const renderReplyItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}`)}
+      onPress={() => router.push(`/drink/${encodeURIComponent(item.drinkName)}/reviews`)}
     >
       <Text style={styles.drinkName}>{item.drinkName}</Text>
       <Text style={styles.rating}>Reply to {item.repliedToUser}</Text>
@@ -104,6 +105,9 @@ export default function UserReviewsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#fff" />

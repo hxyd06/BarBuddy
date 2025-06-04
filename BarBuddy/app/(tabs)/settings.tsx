@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
 
 // Profile & settings screen for user
 export default function SettingsScreen() {
@@ -106,6 +107,9 @@ export default function SettingsScreen() {
   // Render screen content
   return (
     <View style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      
       {/* Profile Image, Username, and Email */}
       <View style={styles.profileSection}>
         <View style={styles.profileImageWrapper}>
@@ -203,28 +207,6 @@ export default function SettingsScreen() {
             <Text style={styles.listLabel}>Your Promotion</Text>
           </TouchableOpacity>
         )}
-
-        {/* Optional: Dark mode toggle (commented out) */}
-        {/*
-        <TouchableOpacity style={styles.listItem} onPress={toggleSwitch}>
-          <Ionicons
-            name={isDarkMode ? 'moon' : 'sunny'}
-            size={28}
-            color="#5c5c99"
-            style={styles.listIcon}
-          />
-          <Text style={styles.listLabel}>
-            {isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'}
-          </Text>
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleSwitch}
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'}
-            style={{ marginLeft: 'auto' }}
-          />
-        </TouchableOpacity>
-        */}
       </View>
 
       {/* Logout Button */}
@@ -239,9 +221,10 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 120,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+    alignItems: 'center',
   },
   profileSection: {
     alignItems: 'center',

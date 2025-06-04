@@ -7,6 +7,7 @@ import { auth, db, storage } from "@/firebase/firebaseConfig";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { StatusBar } from 'react-native';
 
 export default function NewListingScreen() {
   const [name, setName] = useState("");
@@ -113,6 +114,10 @@ export default function NewListingScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+
+        {/* Status bar visible */}
+	      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        
         <ScrollView
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"

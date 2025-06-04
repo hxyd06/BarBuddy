@@ -96,7 +96,7 @@ export default function LearningHubCard() {
           </View>
           
           <View style={styles.actionRow}>
-            <Ionicons name="arrow-forward-circle" size={20} color="#6366f1" />
+            <Ionicons name="arrow-forward-circle" size={20} color="#5c5c99" />
             <Text style={styles.actionText}>Tap to continue</Text>
           </View>
         </View>
@@ -108,24 +108,16 @@ export default function LearningHubCard() {
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-    marginTop: 40, // More space from reviews above
-    marginBottom: 50,
-    paddingHorizontal: 8, // Wider card
+    marginTop: 20,
+    marginBottom: 80,
+    paddingHorizontal: 10,
   },
   container: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   headerSection: {
-    backgroundColor: '#6366f1', // Distinct indigo color
+    backgroundColor: '#5c5c99',
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
@@ -140,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     marginLeft: 12,
@@ -159,7 +151,7 @@ const styles = StyleSheet.create({
   },
   progressContent: {
     padding: 20,
-    backgroundColor: '#f8fafc', // Light gray background
+    backgroundColor: '#f0f0f9', //light gray background
   },
   progressTitle: {
     fontSize: 16,
@@ -199,7 +191,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#6366f1', // Matching the header color
+    backgroundColor: '#5c5c99', //matching the header color
     borderRadius: 6,
   },
   progressCount: {
@@ -217,7 +209,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#6366f1',
+    color: '#5c5c99',
     fontWeight: '500',
     marginLeft: 8,
   },

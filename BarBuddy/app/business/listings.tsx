@@ -5,6 +5,7 @@ import { db, auth } from "@/firebase/firebaseConfig";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from 'react-native';
 
 export default function Listings() {
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -82,6 +83,9 @@ export default function Listings() {
     const isOwner = auth.currentUser?.uid === item.ownerId;
     return (
       <View style={styles.card}>
+        {/* Status bar visible */}
+	      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
         <TouchableOpacity
           onPress={() =>
             router.push({ pathname: "/business/[id]", params: { id: item.id } })

@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { setDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
+import { StatusBar } from 'react-native';
 
 export default function Login() {
   const router = useRouter();
@@ -48,6 +49,9 @@ export default function Login() {
   // Render login form
   return (
     <View style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       <Image
       source={require('../../assets/icons/BarBuddy-icon.png')}
       style={styles.icon}

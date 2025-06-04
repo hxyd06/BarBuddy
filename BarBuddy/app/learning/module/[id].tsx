@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { modules } from '@/utils/learningData';
 import { moduleCompletionMessages } from '@/utils/completionMessages';
+import { StatusBar } from 'react-native';
 
 export default function ModuleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -84,6 +85,9 @@ export default function ModuleScreen() {
 
     return (
       <SafeAreaView style={styles.container}>
+        {/* Status bar visible */}
+	      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
         <View style={styles.modalOverlay}>
           <View style={styles.completionModal}>
             <Text style={styles.completionEmoji}>{completionData?.emoji || '🎉'}</Text>

@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, doc, updateDoc, getDoc, arrayUnion }
 import { db, auth } from '@/firebase/firebaseConfig'; 
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
 
 // Category page for adding ingredients
 export default function CategoryPage() {
@@ -62,6 +63,8 @@ export default function CategoryPage() {
   // Render screen
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
 
       {/* Header with screen title and back button */}
       <View style={styles.header}>
@@ -71,24 +74,25 @@ export default function CategoryPage() {
         <Text style={styles.title}>{category}</Text>
       </View>
 
-      
-      {/* Ingredient list or loading indicator */}
-      {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
-      ) : (
-        <FlatList
-          data={ingredients}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.ingredientCard}
-              onPress={() => handleAddIngredient(item.name)}
-            >
-              <Text style={styles.ingredientText}>{item.name}</Text> 
-            </TouchableOpacity>
-          )}
-        />
-      )}
+      <View style={styles.scrollContent}>
+        {/* Ingredient list or loading indicator */}
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : (
+          <FlatList
+            data={ingredients}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.ingredientCard}
+                onPress={() => handleAddIngredient(item.name)}
+              >
+                <Text style={styles.ingredientText}>{item.name}</Text> 
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -114,6 +118,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  scrollContent: {
+    marginTop: 10,
+    marginBottom: 10,
   },
   loadingText: {
     textAlign: 'center',

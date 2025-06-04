@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Linking, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
@@ -7,9 +7,12 @@ import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { model, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'react-native';
 
 //Drink Suggestion Page
 export default function MealSuggestionScreen() {
+  //Declare cocktail interface
     type Cocktail = {
     id: string;
     name: string;
@@ -17,12 +20,15 @@ export default function MealSuggestionScreen() {
     views: number;
     };
 
+  //State declarations
   const router = useRouter(); //Router navigation
   const [loading, setLoading] = useState(true);
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
-
   const [enteredMeal, setEnteredMeal] = useState('');
   const [suggestedDrink, setSuggestedDrink] = useState('');
+  const [isDrinkValid, setIsDrinkValid] = useState<boolean | null>(null);
+  const [selectedDrink, setSelectedDrink] = useState<Cocktail | null>(null);
+
 
   function buildPrompt(drinks: Cocktail[], meal: string): string {
     const drinkList = drinks.map((drink, i) => `${i + 1}. ${drink.name}`).join('\n');
@@ -40,6 +46,8 @@ Your job is to choose the single best drink from a given list for a given meal. 
 - Only suggest one drink.
 - You must absolutely confirm without any doubt that the drink you suggest is in the below list.
 - Do not include any explanation as to why, just suggest a drink from the list following the constraints.
+- Make sure that your recommendation is a cocktail or drink recipe.
+- Your recommendation must not simply be an echo of the meal itself.
 
 # Available Drinks
 ${drinkList}
@@ -54,35 +62,32 @@ If the drink you would like to suggest is not in the list, try again.
 (Only include the drink name. Nothing else.)`;
 }
 
-    const handleMealSubmit = async () => {
-        try {
-          Keyboard.dismiss();
-            const prompt = buildPrompt(cocktails, enteredMeal);
-            const result = await model.generateContent(prompt);
-            const drink = result.response.text().trim();
-            console.log(drink);
+  //Handle meal submit function
+  const handleMealSubmit = async () => {
+    try {
+      Keyboard.dismiss(); //Dismiss keyboard on submission
+      const prompt = buildPrompt(cocktails, enteredMeal);
+      const result = await model.generateContent(prompt);
+      const drinkName = result.response.text().trim(); //Get AI response
 
-            const checkDrinkValid = cocktails.find((c) =>  c.name === drink);
-            if (checkDrinkValid) {
-                setSuggestedDrink(drink);
-            } else {
-                setSuggestedDrink('error');
-            }
-        } catch (error) {
-            console.error('Error generating drink suggestion:', error);
-        }
-    };
+      //Check if suggested drink is in the database
+      const drink = cocktails.find((c) => c.name === drinkName);
+      setSuggestedDrink(drinkName);
 
-    //Function to handle random drink
-  const handleRandomDrink = () => {
-    //Generate random index of drink list
-    const randomIndex = Math.floor(Math.random() * cocktails.length);
-    const randomDrink = cocktails[randomIndex];
+      //Declare if drink is valid or not
+      if (drink) {
+        setIsDrinkValid(true);
+        setSelectedDrink(drink);
+      } else {
+        setIsDrinkValid(false);
+        setSelectedDrink(null);
+      }
+    } catch (error) {
+      console.error('Error generating drink suggestion:', error);
+    }
+};
 
-    //Go to drink screen
-    router.push(`/drink/${randomDrink.name}`);
-  };
-
+  //Fetch drinks from database
   useFocusEffect(
   useCallback(() => {
     const fetchDrinks = async () => {
@@ -112,6 +117,9 @@ If the drink you would like to suggest is not in the list, try again.
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Status bar visible */}
+      <StatusBar barStyle="light-content" backgroundColor="#5c5c99" />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('../explore')}>
@@ -119,9 +127,9 @@ If the drink you would like to suggest is not in the list, try again.
         </TouchableOpacity>
         <Text style={styles.title}>Match a Drink to Meal</Text>
       </View>
-
       <Text style={styles.descriptionText}>Enter your meal and BarBuddy will suggest an appropriate paired drink.</Text>
 
+    { /* Input box */}
     <View style={styles.inputContainer}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}></View>
         <TextInput 
@@ -132,32 +140,55 @@ If the drink you would like to suggest is not in the list, try again.
             style={[styles.mealInput, { flex: 1 }]}
             />
             {enteredMeal.length > 0 && (
+              /* Submit button  */
             <TouchableOpacity onPress={handleMealSubmit}>
                 <Text style={styles.submitText}>Submit</Text>
             </TouchableOpacity>
             )}
         </View>
-        {suggestedDrink === 'error' && (
-        <View style={styles.viewButton}>
+        { /* Drink not in database */ }
+        {isDrinkValid == false && (
+        <View>
             <View style={styles.suggestedTextContainer}>
-            <Text style={styles.suggestedText}>No drink could be matched to this meal.</Text>
+              <Text style={styles.suggestedText}>Suggested Drink:</Text>
+              <Text style={styles.suggestedText}>{suggestedDrink}</Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={() => handleRandomDrink()}>
-                <Text style={styles.buttonText}>See a Random Drink</Text>
-            </TouchableOpacity>
+              <Text style={{ textAlign:'center',  color: '#888', marginBottom: 5 }}>BarBuddy doesn't have a recipe for this drink.</Text>
+              <TouchableOpacity style={styles.button} onPress={() => {
+                    const query = encodeURIComponent(`${suggestedDrink} recipe`);
+                    const url = `https://www.google.com/search?q=${query}`;
+                    Linking.openURL(url);
+                  }}>
+                  { /* Searches Google for recipes */ }
+                <Text style={styles.buttonText}>Search The Web</Text>
+              </TouchableOpacity>
         </View>
         )}
-        {suggestedDrink !== '' && suggestedDrink !== 'error' && (
-        <View style={styles.viewButton}>
-            <View style={styles.suggestedTextContainer}>
-            <Text style={styles.suggestedText}>Suggested Drink:</Text>
-            <Text style={styles.suggestedText}>{suggestedDrink}</Text>
-            </View>
+        { /* Drink in database */ }
+        {suggestedDrink !== '' && isDrinkValid == true && (
+        <View>
+     {selectedDrink && (
+      /* Link to recipe in-app */
+  <TouchableOpacity
+    onPress={() => router.push(`../drink/${encodeURIComponent(selectedDrink.name)}`)}
+    style={styles.suggestedContainer}
+  >
+    <Image source={{ uri: selectedDrink.image }} style={styles.bannerImage} />
+    <LinearGradient
+      colors={['transparent', 'rgba(0,0,0,0.8)']}
+      style={styles.gradientOverlay}
+    />
+    <View style={styles.bannerContent}>
+      <Text style={styles.drinkLabel}>Suggested Drink</Text>
+      <Text style={styles.drinkName}>{selectedDrink.name}</Text>
+      <View style={styles.viewContainer}>
+        <Text style={styles.viewText}>View Full Recipe</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+)}
         <View>
         </View>
-        <TouchableOpacity style={styles.button} onPress={() => router.push(`/drink/${encodeURIComponent(suggestedDrink)}`)}>
-            <Text style={styles.buttonText}>View Recipe</Text>
-        </TouchableOpacity>
         </View>        
     )}
     </SafeAreaView>
@@ -190,10 +221,10 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#5c5c99',
     justifyContent: 'flex-end',
-    padding: 32,
-    margin: 12,
+    padding: 25,
+    marginLeft: 20,
+    marginRight: 20,
     borderRadius: 10,
-    marginBottom: 12,
   },
   buttonText: {
     fontWeight: 'bold',
@@ -213,7 +244,8 @@ const styles = StyleSheet.create({
   },
   descriptionText: { 
     textAlign: 'center', 
-    marginTop: 30, 
+    marginTop: 30,
+    marginBottom: 30, 
     color: '#888' 
   },
   inputContainer: {
@@ -222,16 +254,19 @@ const styles = StyleSheet.create({
   paddingHorizontal: 10,
   paddingVertical: 8,
   marginHorizontal: 20,
-  marginTop: 20,
   flexDirection: 'row',
   alignItems: 'center',
 },
 suggestedTextContainer: {
-    backgroundColor: '#f5f5fc',
-    padding: 16,
-    borderRadius: 10,
-    margin: 20,
-    marginBottom: '80%',
+  backgroundColor: '#f5f5fc',
+  margin: 20,
+  padding: 20,
+},
+suggestedContainer: {
+  height: 400,
+  borderRadius: 16,
+  overflow: 'hidden',
+  margin: 20,
 },
 suggestedText: {
     fontSize: 20,
@@ -251,5 +286,48 @@ mealInput: {
 viewButton: {
     flex: 1,
     justifyContent: 'flex-end',
-}
+},
+viewsIcon: {
+  marginTop: 20,
+  marginLeft: 80,
+},
+bannerImage: {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+},
+gradientOverlay: {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  bottom: 0,
+  left: 0,
+},
+bannerContent: {
+  position: 'absolute',
+  bottom: 20,
+  left: 20,
+  right: 20,
+},
+drinkLabel: {
+ color: '#fff',
+ fontSize: 16,
+ fontWeight: '600',
+ marginBottom: 4,
+},
+drinkName: {
+ color: '#fff',
+ fontSize: 26,
+ fontWeight: 'bold',
+},
+viewContainer: {
+ flexDirection: 'row',
+ alignItems: 'center',
+ marginTop: 6,
+},
+viewText: {
+ color: '#fff',
+ fontSize: 14,
+},
+
 });
