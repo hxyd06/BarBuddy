@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
 import { db, auth, model } from '@/firebase/firebaseConfig';
@@ -6,6 +6,7 @@ import { collection, doc, getDoc, getDocs, query, orderBy, limit } from 'firebas
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Carousel from 'react-native-reanimated-carousel';
 
 export default function HomeScreen() {
   type Cocktail = {
@@ -22,7 +23,10 @@ export default function HomeScreen() {
   const router = useRouter();
   const [drinks, setDrinks] = useState<any[]>([]);
   const [randomTopDrink, setRandomTopDrink] = useState<Cocktail | null>(null);
+  const [top5Drinks, setTop5Drinks] = useState<Cocktail[]>([]);
 
+
+  const { width } = Dimensions.get('window');
 
   const fetchUsername = async () => {
     try {
@@ -52,33 +56,27 @@ export default function HomeScreen() {
     console.error('Error fetching drinks:', error);
   }
 };
-    const fetchTrendingDrinks = async () => {
-      try {
-      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
-      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        return {
-          name: data.name,
-          image: data.image,
-          views: data.views,
-        };
-      });
-      // Sort by views descending
-      const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
+    const topTrendingDrinks = async () => {
+  try {
+    const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+    const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+      const data = docSnap.data();
+      return {
+        name: data.name,
+        image: data.image,
+        views: data.views,
+      };
+    });
 
-      // Pick top 5
-      const top5 = sortedDrinks.slice(0, 5);
+    const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
+    const top5 = sortedDrinks.slice(0, 5);
 
-      // Pick a random one from top 5
-      const randomIndex = Math.floor(Math.random() * top5.length);
-      const randomDrink = top5[randomIndex];
-
-      // Save to state
-      setRandomTopDrink(randomDrink);
-    } catch (error) {
-      console.error('Error fetching drinks:', error);
-    }
-  };
+    setTop5Drinks(top5); // <- Save all top 5
+    setRandomTopDrink(top5[Math.floor(Math.random() * top5.length)]);
+  } catch (error) {
+    console.error('Error fetching trending drinks:', error);
+  }
+};
 
   const generateRandomTip = async () => {
     try {
@@ -143,11 +141,19 @@ export default function HomeScreen() {
   };
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    Promise.all([fetchUsername(), generateRandomTip(), fetchTrendingDrinks(), fetchSavedDrinks(), fetchRecentReviews(), fetchDrinks()]).finally(() => {
-      setRefreshing(false);
-    });
-  }, []);
+  setRefreshing(true);
+  Promise.all([
+    fetchUsername(),
+    generateRandomTip(),
+    topTrendingDrinks(),
+    fetchSavedDrinks(),
+    fetchRecentReviews(),
+    fetchDrinks()
+  ]).finally(() => {
+    setRefreshing(false);
+  });
+}, []);
+
 
   useEffect(() => {
     onRefresh();
@@ -175,29 +181,6 @@ export default function HomeScreen() {
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
           </TouchableOpacity>
 
-          {randomTopDrink ? (
-  <TouchableOpacity
-    onPress={() => router.push(`../drink/${encodeURIComponent(randomTopDrink.name)}`)}
-    style={styles.trendingContainer}
-  >
-    <Image source={{ uri: randomTopDrink.image }} style={styles.bannerImage} />
-    <LinearGradient
-      colors={['transparent', 'rgba(0,0,0,0.8)']}
-      style={styles.gradientOverlay}
-    />
-    <View style={styles.bannerContent}>
-      <Text style={styles.trendingLabel}>Trending Drink</Text>
-      <Text style={styles.trendingName}>{randomTopDrink.name}</Text>
-      <View style={styles.viewsContainer}>
-        <Ionicons name="eye-outline" size={20} color="#fff" />
-        <Text style={styles.viewsText}>{randomTopDrink.views} views</Text>
-      </View>
-    </View>
-  </TouchableOpacity>
-) : (
-  <Text>Loading...</Text>
-)}
-
         {randomTip && (
           <View style={styles.tipBadge}>
             <View style={styles.tipHeader}>
@@ -207,6 +190,34 @@ export default function HomeScreen() {
             <Text style={styles.tipText}>{randomTip}</Text>
           </View>
         )}
+
+        <Carousel
+  width={width}
+  height={200}
+  autoPlay={true} 
+  autoPlayInterval={3000}
+  data={top5Drinks}
+  renderItem={({ item }: { item: Cocktail }) => (
+    <TouchableOpacity
+      onPress={() => router.push(`../drink/${encodeURIComponent(item.name)}`)}
+      style={styles.trendingContainer}
+    >
+      <Image source={{ uri: item.image }} style={styles.bannerImage} />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.8)']}
+        style={styles.gradientOverlay}
+      />
+      <View style={styles.bannerContent}>
+        <Text style={styles.trendingLabel}>Trending Drink</Text>
+        <Text style={styles.trendingName}>{item.name}</Text>
+        <View style={styles.viewsContainer}>
+          <Ionicons name="eye-outline" size={20} color="#fff" />
+          <Text style={styles.viewsText}>{item.views} views</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  )}
+/>
 
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
@@ -460,13 +471,11 @@ viewsIcon: {
   marginLeft: 80,
 },
 trendingContainer: {
-  width: '100%',
   height: 180,
   borderRadius: 16,
   overflow: 'hidden',
-  marginBottom: 20,
+  margin: 20,
 },
-
 bannerImage: {
   width: '100%',
   height: '100%',
