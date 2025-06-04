@@ -15,6 +15,7 @@ export default function HomeScreen() {
     views: number;
   };
 
+  //Declare state variables
   const [username, setUsername] = useState<string | null>(null);
   const [randomTip, setRandomTip] = useState<string>('');
   const [savedDrinks, setSavedDrinks] = useState<any[]>([]);
@@ -25,9 +26,10 @@ export default function HomeScreen() {
   const [randomTopDrink, setRandomTopDrink] = useState<Cocktail | null>(null);
   const [top5Drinks, setTop5Drinks] = useState<Cocktail[]>([]);
 
-
+  //Define window width as a constant for styling
   const { width } = Dimensions.get('window');
 
+  //Fetch username
   const fetchUsername = async () => {
     try {
       const user = auth.currentUser;
@@ -44,40 +46,42 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch drinks from database
   const fetchDrinks = async () => {
-  try {
-    const snapshot = await getDocs(collection(db, 'cocktails'));
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setDrinks(data);
-  } catch (error) {
-    console.error('Error fetching drinks:', error);
-  }
-};
-    const topTrendingDrinks = async () => {
-  try {
-    const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
-    const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
-      const data = docSnap.data();
-      return {
-        name: data.name,
-        image: data.image,
-        views: data.views,
-      };
-    });
+    try {
+      const snapshot = await getDocs(collection(db, 'cocktails'));
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDrinks(data);
+    } catch (error) {
+      console.error('Error fetching drinks:', error);
+    }
+  };
 
+  //Get the top 5 trending drinks
+  const topTrendingDrinks = async () => {
+    try {
+      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          name: data.name,
+          image: data.image,
+          views: data.views,
+        };
+    });
     const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
     const top5 = sortedDrinks.slice(0, 5);
-
-    setTop5Drinks(top5); // <- Save all top 5
+    setTop5Drinks(top5);
     setRandomTopDrink(top5[Math.floor(Math.random() * top5.length)]);
-  } catch (error) {
-    console.error('Error fetching trending drinks:', error);
-  }
-};
+    } catch (error) {
+      console.error('Error fetching trending drinks:', error);
+    }
+  };
 
+  //Use AI to generate a random tip
   const generateRandomTip = async () => {
     try {
       const promptIdeas = [
@@ -91,7 +95,6 @@ export default function HomeScreen() {
         'What’s a useful but lesser-known shaking or stirring technique? Max 3 sentences.',
       ];
       const randomPrompt = promptIdeas[Math.floor(Math.random() * promptIdeas.length)];
-
       const result = await model.generateContent(randomPrompt);
       const tip = result.response.text().trim();
       if (tip) {
@@ -104,6 +107,7 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch user's saved drinks
   const fetchSavedDrinks = async () => {
     try {
       const user = auth.currentUser;
@@ -116,6 +120,7 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch recent reviews
   const fetchRecentReviews = async () => {
     try {
       const snapshot = await getDocs(query(collection(db, 'allReviews'), orderBy('createdAt', 'desc'), limit(10)));
@@ -140,21 +145,20 @@ export default function HomeScreen() {
     }
   };
 
+  //Refresh
   const onRefresh = useCallback(() => {
-  setRefreshing(true);
-  Promise.all([
-    fetchUsername(),
-    generateRandomTip(),
-    topTrendingDrinks(),
-    fetchSavedDrinks(),
-    fetchRecentReviews(),
-    fetchDrinks()
-  ]).finally(() => {
-    setRefreshing(false);
-  });
-}, []);
-
-
+    setRefreshing(true);
+    Promise.all([
+      fetchUsername(),
+      generateRandomTip(),
+      topTrendingDrinks(),
+      fetchSavedDrinks(),
+      fetchRecentReviews(),
+      fetchDrinks()
+    ]).finally(() => {
+      setRefreshing(false);
+    });
+  }, []);
   useEffect(() => {
     onRefresh();
   }, []);
@@ -162,14 +166,16 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        { /* BarBuddy Icon */ }
         <Image
-          source={require('../../assets/icons/BarBuddy-icon.png')} // adjust if needed
+          source={require('../../assets/icons/BarBuddy-icon.png')}
           style={styles.icon}
           resizeMode="contain"
         />
         <Text style={styles.screenTitle}>BarBuddy</Text>
       </View>
       <ScrollView
+        /* Swipe down to refresh */
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
@@ -191,34 +197,34 @@ export default function HomeScreen() {
           </View>
         )}
 
+        { /* Carousel of top 5 trending drinks */ }
         <Carousel
-  width={width}
-  height={200}
-  autoPlay={true} 
-  autoPlayInterval={3000}
-  data={top5Drinks}
-  renderItem={({ item }: { item: Cocktail }) => (
-    <TouchableOpacity
-      onPress={() => router.push(`../drink/${encodeURIComponent(item.name)}`)}
-      style={styles.trendingContainer}
-    >
-      <Image source={{ uri: item.image }} style={styles.bannerImage} />
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.8)']}
-        style={styles.gradientOverlay}
-      />
-      <View style={styles.bannerContent}>
-        <Text style={styles.trendingLabel}>Trending Drink</Text>
-        <Text style={styles.trendingName}>{item.name}</Text>
-        <View style={styles.viewsContainer}>
-          <Ionicons name="eye-outline" size={20} color="#fff" />
-          <Text style={styles.viewsText}>{item.views} views</Text>
+          width={width}
+          height={200}
+          autoPlay={true} 
+          autoPlayInterval={3000}
+          data={top5Drinks}
+          renderItem={({ item }: { item: Cocktail }) => (
+          <TouchableOpacity
+            onPress={() => router.push(`../drink/${encodeURIComponent(item.name)}`)}
+            style={styles.trendingContainer}
+          >
+          <Image source={{ uri: item.image }} style={styles.bannerImage} />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.gradientOverlay}
+          />
+          <View style={styles.bannerContent}>
+            <Text style={styles.trendingLabel}>Trending Drink</Text>
+            <Text style={styles.trendingName}>{item.name}</Text>
+            <View style={styles.viewsContainer}>
+              <Ionicons name="eye-outline" size={20} color="#fff" />
+              <Text style={styles.viewsText}>{item.views} views</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  )}
-/>
-
+        </TouchableOpacity>
+      )}
+    />
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
             <Text style={styles.savedHeader}>Your Recent Saved Drinks</Text>
@@ -287,6 +293,7 @@ export default function HomeScreen() {
   );
 }
 
+//Stylesheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
