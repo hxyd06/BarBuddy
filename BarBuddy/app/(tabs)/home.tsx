@@ -1,13 +1,26 @@
 import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, RefreshControl, Platform, FlatList, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
 import { db, auth, model } from '@/firebase/firebaseConfig';
 import { collection, doc, getDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+<<<<<<< HEAD
 import LearningHubCard from '@/components/LearningHubCard';
+=======
+import { LinearGradient } from 'expo-linear-gradient';
+import Carousel from 'react-native-reanimated-carousel';
+>>>>>>> Business-trending
 
 export default function HomeScreen() {
+  type Cocktail = {
+    name: string;
+    image: string;
+    views: number;
+  };
+
+  //Declare state variables
   const [username, setUsername] = useState<string | null>(null);
   const [randomTip, setRandomTip] = useState<string>('');
   const [savedDrinks, setSavedDrinks] = useState<any[]>([]);
@@ -15,7 +28,13 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const [drinks, setDrinks] = useState<any[]>([]);
+  const [randomTopDrink, setRandomTopDrink] = useState<Cocktail | null>(null);
+  const [top5Drinks, setTop5Drinks] = useState<Cocktail[]>([]);
 
+  //Define window width as a constant for styling
+  const { width } = Dimensions.get('window');
+
+  //Fetch username
   const fetchUsername = async () => {
     try {
       const user = auth.currentUser;
@@ -32,6 +51,7 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch drinks from database
   const fetchDrinks = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'cocktails'));
@@ -45,7 +65,33 @@ export default function HomeScreen() {
     }
   };
 
+<<<<<<< HEAD
  const generateRandomTip = async () => {
+=======
+  //Get the top 5 trending drinks
+  const topTrendingDrinks = async () => {
+    try {
+      const cocktailsSnapshot = await getDocs(collection(db, 'cocktails'));
+      const cocktailsData = cocktailsSnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          name: data.name,
+          image: data.image,
+          views: data.views,
+        };
+    });
+    const sortedDrinks = cocktailsData.sort((a, b) => b.views - a.views);
+    const top5 = sortedDrinks.slice(0, 5);
+    setTop5Drinks(top5);
+    setRandomTopDrink(top5[Math.floor(Math.random() * top5.length)]);
+    } catch (error) {
+      console.error('Error fetching trending drinks:', error);
+    }
+  };
+
+  //Use AI to generate a random tip
+  const generateRandomTip = async () => {
+>>>>>>> Business-trending
     try {
       const promptIdeas = [
         'Give a clever tip about garnishes that most home bartenders overlook. No more than 3 sentences.',
@@ -71,6 +117,7 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch user's saved drinks
   const fetchSavedDrinks = async () => {
     try {
       const user = auth.currentUser;
@@ -83,6 +130,7 @@ export default function HomeScreen() {
     }
   };
 
+  //Fetch recent reviews
   const fetchRecentReviews = async () => {
     try {
       const snapshot = await getDocs(query(collection(db, 'allReviews'), orderBy('createdAt', 'desc'), limit(10)));
@@ -107,13 +155,21 @@ export default function HomeScreen() {
     }
   };
 
+  //Refresh
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     Promise.all([fetchUsername(), generateRandomTip(), fetchSavedDrinks(), fetchRecentReviews(), fetchDrinks()]).finally(() => {
+    Promise.all([
+      fetchUsername(),
+      generateRandomTip(),
+      topTrendingDrinks(),
+      fetchSavedDrinks(),
+      fetchRecentReviews(),
+      fetchDrinks()
+    ]).finally(() => {
       setRefreshing(false);
     });
   }, []);
-
   useEffect(() => {
     onRefresh();
   }, []);
@@ -121,8 +177,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        { /* BarBuddy Icon */ }
         <Image
           source={require('../../assets/icons/BarBuddy-icon.png')} // adjust if needed
+          source={require('../../assets/icons/BarBuddy-icon.png')}
           style={styles.icon}
           resizeMode="contain"
         />
@@ -130,6 +188,7 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView
+        /* Swipe down to refresh */
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
@@ -138,6 +197,7 @@ export default function HomeScreen() {
         )}
 
         <TouchableOpacity style={styles.businessButton} onPress={() => router.push('/business/listings')}>
+        <TouchableOpacity style={styles.businessButton} onPress={() => router.push('../business/listings')}>
             <Text style={styles.businessButtonText}>Find new Businesses or Stores!</Text>
         </TouchableOpacity>
         <TouchableOpacity testID = "Promotions"style={styles.businessButton} onPress={() => router.push('/business/promotion/promotions')}>
@@ -153,6 +213,34 @@ export default function HomeScreen() {
           </View>
         )}
 
+        { /* Carousel of top 5 trending drinks */ }
+        <Carousel
+          width={width}
+          height={200}
+          autoPlay={true} 
+          autoPlayInterval={3000}
+          data={top5Drinks}
+          renderItem={({ item }: { item: Cocktail }) => (
+          <TouchableOpacity
+            onPress={() => router.push(`../drink/${encodeURIComponent(item.name)}`)}
+            style={styles.trendingContainer}
+          >
+          <Image source={{ uri: item.image }} style={styles.bannerImage} />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.gradientOverlay}
+          />
+          <View style={styles.bannerContent}>
+            <Text style={styles.trendingLabel}>Trending Drink</Text>
+            <Text style={styles.trendingName}>{item.name}</Text>
+            <View style={styles.viewsContainer}>
+              <Ionicons name="eye-outline" size={20} color="#fff" />
+              <Text style={styles.viewsText}>{item.views} views</Text>
+          </View>
+        </View>
+        </TouchableOpacity>
+      )}
+    />
         {savedDrinks.length > 0 && (
           <View style={styles.savedSection}>
             <Text style={styles.savedHeader}>Your Recent Saved Drinks</Text>
@@ -225,12 +313,21 @@ export default function HomeScreen() {
   );
 }
 
+//Stylesheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     padding: 10,
   },
+  titleContainer: {
+    position: 'absolute',
+    bottom: 10,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleText: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
   scrollContent: {
     paddingTop: 20,
     alignItems: 'center',
@@ -396,4 +493,57 @@ businessButtonText: {
   color: '#5c5c9a',
   fontWeight: '500'
 },
+viewsIcon: {
+  marginTop: 20,
+  marginLeft: 80,
+},
+trendingContainer: {
+  height: 180,
+  borderRadius: 16,
+  overflow: 'hidden',
+  margin: 20,
+},
+bannerImage: {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+},
+
+gradientOverlay: {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  bottom: 0,
+  left: 0,
+},
+bannerContent: {
+  position: 'absolute',
+  bottom: 20,
+  left: 20,
+  right: 20,
+},
+trendingLabel: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 4,
+},
+trendingName: {
+  color: '#fff',
+  fontSize: 26,
+  fontWeight: 'bold',
+},
+
+viewsContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 6,
+},
+
+viewsText: {
+  color: '#fff',
+  fontSize: 14,
+  marginLeft: 6,
+},
+
 });
