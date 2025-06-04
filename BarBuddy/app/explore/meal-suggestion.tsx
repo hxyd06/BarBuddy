@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Linking, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { model, db } from '@/firebase/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 //Drink Suggestion Page
 export default function MealSuggestionScreen() {
@@ -24,6 +25,8 @@ export default function MealSuggestionScreen() {
   const [enteredMeal, setEnteredMeal] = useState('');
   const [suggestedDrink, setSuggestedDrink] = useState('');
   const [isDrinkValid, setIsDrinkValid] = useState<boolean | null>(null);
+  const [selectedDrink, setSelectedDrink] = useState<Cocktail | null>(null);
+
 
   function buildPrompt(drinks: Cocktail[], meal: string): string {
     const drinkList = drinks.map((drink, i) => `${i + 1}. ${drink.name}`).join('\n');
@@ -58,24 +61,27 @@ If the drink you would like to suggest is not in the list, try again.
 }
 
     const handleMealSubmit = async () => {
-        try {
-          Keyboard.dismiss();
-            const prompt = buildPrompt(cocktails, enteredMeal);
-            const result = await model.generateContent(prompt);
-            const drink = result.response.text().trim();
-            console.log(drink);
+  try {
+    Keyboard.dismiss();
+    const prompt = buildPrompt(cocktails, enteredMeal);
+    const result = await model.generateContent(prompt);
+    const drinkName = result.response.text().trim();
+    console.log(drinkName);
 
-            const checkDrinkValid = cocktails.find((c) =>  c.name === drink);
-            setSuggestedDrink(drink);
-            if (checkDrinkValid) {
-                setIsDrinkValid(true);
-            } else {
-                setIsDrinkValid(false);
-            }
-        } catch (error) {
-            console.error('Error generating drink suggestion:', error);
-        }
-    };
+    const drink = cocktails.find((c) => c.name === drinkName);
+    setSuggestedDrink(drinkName);
+
+    if (drink) {
+      setIsDrinkValid(true);
+      setSelectedDrink(drink); // 👈 Save full drink object
+    } else {
+      setIsDrinkValid(false);
+      setSelectedDrink(null); // clear previous selection
+    }
+  } catch (error) {
+    console.error('Error generating drink suggestion:', error);
+  }
+};
 
     //Function to handle random drink
   const handleRandomDrink = () => {
@@ -147,8 +153,7 @@ If the drink you would like to suggest is not in the list, try again.
               <Text style={styles.suggestedText}>Suggested Drink:</Text>
               <Text style={styles.suggestedText}>{suggestedDrink}</Text>
             </View>
-            <View></View>
-              <Text style={styles.descriptionText}>BarBuddy doesn't have a recipe for this drink.</Text>
+              <Text style={{ textAlign:'center',  color: '#888', marginBottom: 5 }}>BarBuddy doesn't have a recipe for this drink.</Text>
               <TouchableOpacity style={styles.button} onPress={() => {
                     const query = encodeURIComponent(`${suggestedDrink} recipe`);
                     const url = `https://www.google.com/search?q=${query}`;
@@ -159,16 +164,28 @@ If the drink you would like to suggest is not in the list, try again.
         </View>
         )}
         {suggestedDrink !== '' && isDrinkValid == true && (
-        <View style={styles.viewButton}>
-            <View style={styles.suggestedTextContainer}>
-            <Text style={styles.suggestedText}>Suggested Drink:</Text>
-            <Text style={styles.suggestedText}>{suggestedDrink}</Text>
-            </View>
+        <View>
+     {selectedDrink && (
+  <TouchableOpacity
+    onPress={() => router.push(`../drink/${encodeURIComponent(selectedDrink.name)}`)}
+    style={styles.suggestedContainer}
+  >
+    <Image source={{ uri: selectedDrink.image }} style={styles.bannerImage} />
+    <LinearGradient
+      colors={['transparent', 'rgba(0,0,0,0.8)']}
+      style={styles.gradientOverlay}
+    />
+    <View style={styles.bannerContent}>
+      <Text style={styles.drinkLabel}>Suggested Drink</Text>
+      <Text style={styles.drinkName}>{selectedDrink.name}</Text>
+      <View style={styles.viewContainer}>
+        <Text style={styles.viewText}>View Full Recipe</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+)}
         <View>
         </View>
-        <TouchableOpacity style={styles.button} onPress={() => router.push(`/drink/${encodeURIComponent(suggestedDrink)}`)}>
-            <Text style={styles.buttonText}>View Recipe</Text>
-        </TouchableOpacity>
         </View>        
     )}
     </SafeAreaView>
@@ -202,7 +219,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c5c99',
     justifyContent: 'flex-end',
     padding: 25,
-    margin: 12,
+    marginLeft: 20,
+    marginRight: 20,
     borderRadius: 10,
   },
   buttonText: {
@@ -223,7 +241,8 @@ const styles = StyleSheet.create({
   },
   descriptionText: { 
     textAlign: 'center', 
-    marginTop: 30, 
+    marginTop: 30,
+    marginBottom: 30, 
     color: '#888' 
   },
   inputContainer: {
@@ -232,16 +251,19 @@ const styles = StyleSheet.create({
   paddingHorizontal: 10,
   paddingVertical: 8,
   marginHorizontal: 20,
-  marginTop: 20,
   flexDirection: 'row',
   alignItems: 'center',
 },
 suggestedTextContainer: {
-    backgroundColor: '#f5f5fc',
-    padding: 16,
-    borderRadius: 10,
-    margin: 20,
-    marginBottom: '80%',
+  backgroundColor: '#f5f5fc',
+  margin: 20,
+  padding: 20,
+},
+suggestedContainer: {
+  height: 400,
+  borderRadius: 16,
+  overflow: 'hidden',
+  margin: 20,
 },
 suggestedText: {
     fontSize: 20,
@@ -261,5 +283,48 @@ mealInput: {
 viewButton: {
     flex: 1,
     justifyContent: 'flex-end',
-}
+},
+viewsIcon: {
+  marginTop: 20,
+  marginLeft: 80,
+},
+bannerImage: {
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+},
+gradientOverlay: {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  bottom: 0,
+  left: 0,
+},
+bannerContent: {
+  position: 'absolute',
+  bottom: 20,
+  left: 20,
+  right: 20,
+},
+drinkLabel: {
+ color: '#fff',
+ fontSize: 16,
+ fontWeight: '600',
+ marginBottom: 4,
+},
+drinkName: {
+ color: '#fff',
+ fontSize: 26,
+ fontWeight: 'bold',
+},
+viewContainer: {
+ flexDirection: 'row',
+ alignItems: 'center',
+ marginTop: 6,
+},
+viewText: {
+ color: '#fff',
+ fontSize: 14,
+},
+
 });
