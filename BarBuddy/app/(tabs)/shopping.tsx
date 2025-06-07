@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         color: '#5c5c99',
-        paddingTop: 40,
+        paddingTop: 50,
         paddingBottom: 10,
         textAlign: 'center',
     },
