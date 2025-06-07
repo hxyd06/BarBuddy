@@ -80,7 +80,7 @@ export default function AvailableDrinksScreen() {
         for (const docSnap of cocktailsSnapshot.docs) {
           const cocktail = docSnap.data();
           if (!cocktail.ingredients) {
-            console.error('No ingredients found for cocktail:', cocktail.name);
+            console.log('No ingredients found for cocktail:', cocktail.name);
             continue;
           }
           const ingredientsMap = cocktail.ingredients;
