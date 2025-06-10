@@ -1,6 +1,6 @@
 BarBuddy - Your Pocket Mixologist
 
-BarBuddy is a mobile app that helps users discover drink recipes and locate nearby bars offering those drinks. It also includes features for business owners to advertise promotions and list their venues.
+BarBuddy is your pocket mixologist - discover personalised cocktail recipes, find nearby bars, and connect with a vibrant community of drink-lovers. Users can get tailored drink suggestions, upskill your bartending game, while business owners can promote their venues and special offers directly to cocktail enthusiasts on the app. 
 
 
 Features: 

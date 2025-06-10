@@ -68,10 +68,10 @@ export default function ReviewsScreen() {
     const q = query(collection(db, 'cocktails', drinkId, 'reviews'));
     const unsubscribeReviews = onSnapshot(q, async snapshot => {
       const liveReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
-      setReviews(liveReviews); // Update reviews state when data changes
+      setReviews(liveReviews);
     });
 
-    return () => unsubscribeReviews(); // Cleanup when component unmounts or drinkId changes
+    return () => unsubscribeReviews();
   }, [drinkId]);
 
   // Effect to load replies for reviews and fetch user profiles.
@@ -81,7 +81,7 @@ export default function ReviewsScreen() {
     const unsubscribes: (() => void)[] = [];
     const allReplyUIDs = new Set<string>();
 
-    // For each review, subscribe to its replies.
+
     reviews.forEach(review => {
       const repliesRef = collection(db, 'cocktails', drinkId, 'reviews', review.id!, 'replies');
       const unsubscribeReplies = onSnapshot(repliesRef, snapshot => {
@@ -89,20 +89,18 @@ export default function ReviewsScreen() {
         setReplies(prev => {
           const updated = { ...prev, [review.id!]: replyList };
 
-          // Collect UIDs for fetching user profiles of reviewers and reply authors.
           replyList.forEach(reply => allReplyUIDs.add(reply.uid));
 
-          // Fetch profiles for all involved users
           const uidsToFetch = new Set<string>([...reviews.map(r => r.uid), ...allReplyUIDs]);
           fetchUserProfiles(Array.from(uidsToFetch));
 
           return updated;
         });
       });
-      unsubscribes.push(unsubscribeReplies); // Store unsubscribe function for cleanup
+      unsubscribes.push(unsubscribeReplies);
     });
 
-    return () => unsubscribes.forEach(unsub => unsub()); // Cleanup when component unmounts or reviews change
+    return () => unsubscribes.forEach(unsub => unsub());
   }, [drinkId, reviews]);
 
   // Function to fetch user profiles from Firestore based on a list of UIDs.
@@ -110,7 +108,7 @@ export default function ReviewsScreen() {
     const profileMap: Record<string, UserProfile> = {};
     await Promise.all(
       uids.map(async uid => {
-        if (!userProfiles[uid]) { // Avoid fetching already stored profiles
+        if (!userProfiles[uid]) {
           const userSnap = await getDoc(doc(db, 'users', uid));
           if (userSnap.exists()) {
             const data = userSnap.data();
@@ -119,7 +117,7 @@ export default function ReviewsScreen() {
         }
       })
     );
-    setUserProfiles(prev => ({ ...prev, ...profileMap })); // Update the state with the fetched profiles
+    setUserProfiles(prev => ({ ...prev, ...profileMap }));
   };
 
   // Function to submit a reply to a specific review.
@@ -136,22 +134,49 @@ export default function ReviewsScreen() {
 
     try {
       const nestedRef = collection(db, 'cocktails', drinkId, 'reviews', reviewId, 'replies');
-      const addedReplyRef = await addDoc(nestedRef, replyData);
 
-      await addDoc(collection(db, 'allReplies'), {
-        ...replyData,
-        userId: user.uid,
-        drinkId,
-        drinkName: drink,
-        reviewId,
-        comment: replyData.text,
-        nestedReplyId: addedReplyRef.id,
-      });
+      if (editingReplyId) {
+        await setDoc(doc(nestedRef, editingReplyId), replyData, { merge: true });
 
-      setReplyText(''); // Clear the reply input field
-      setReplyingTo(null); // Reset replying state
+        const allRepliesQuery = query(
+          collection(db, 'allReplies'),
+          where('userId', '==', user.uid),
+          where('drinkId', '==', drinkId),
+          where('reviewId', '==', reviewId),
+          where('nestedReplyId', '==', editingReplyId)
+        );
+        const snapshot = await getDocs(allRepliesQuery);
+        for (const docSnap of snapshot.docs) {
+          await setDoc(doc(db, 'allReplies', docSnap.id), {
+            ...replyData,
+            userId: user.uid,
+            drinkId,
+            drinkName: drink,
+            reviewId,
+            comment: replyData.text,
+          }, { merge: true });
+        }
+
+        setEditingReplyId(null);
+      } else {
+
+        const addedReplyRef = await addDoc(nestedRef, replyData);
+
+        await addDoc(collection(db, 'allReplies'), {
+          ...replyData,
+          userId: user.uid,
+          drinkId,
+          drinkName: drink,
+          reviewId,
+          comment: replyData.text,
+          nestedReplyId: addedReplyRef.id,
+        });
+      }
+
+      setReplyText('');
+      setReplyingTo(null);
     } catch (error) {
-      console.error('Error submitting reply:', error); // Log any errors during the reply submission process
+      console.error('Error submitting reply:', error);
     }
   };
 
@@ -171,22 +196,22 @@ export default function ReviewsScreen() {
     };
 
     try {
-      if (editingReviewId) { // If editing an existing review
+      if (editingReviewId) {
         await setDoc(doc(db, 'cocktails', drinkId, 'reviews', editingReviewId), reviewData, { merge: true });
         const allReviewsQuery = query(collection(db, 'allReviews'), where('userId', '==', user.uid), where('drinkId', '==', drinkId));
         const snapshot = await getDocs(allReviewsQuery);
         for (const docSnap of snapshot.docs) {
           await setDoc(doc(db, 'allReviews', docSnap.id), { ...reviewData, userId: user.uid, comment: reviewData.text }, { merge: true });
         }
-        setEditingReviewId(null); // Clear the editing state
-      } else { // If submitting a new review
+        setEditingReviewId(null);
+      } else {
         await addDoc(collection(db, 'cocktails', drinkId, 'reviews'), reviewData);
         await addDoc(collection(db, 'allReviews'), { ...reviewData, userId: user.uid, comment: reviewData.text });
       }
-      setReviewText(''); // Clear the review input field
-      setRating(0); // Reset the rating
+      setReviewText('');
+      setRating(0);
     } catch (error) {
-      console.error('Error submitting review:', error); // Log any errors during review submission
+      console.error('Error submitting review:', error);
     }
   };
 
@@ -196,9 +221,9 @@ export default function ReviewsScreen() {
       await deleteDoc(doc(db, 'cocktails', drinkId, 'reviews', reviewId));
       const allReviewsQuery = query(collection(db, 'allReviews'), where('userId', '==', userId), where('drinkId', '==', drinkId));
       const snapshot = await getDocs(allReviewsQuery);
-      snapshot.forEach(docSnap => deleteDoc(doc(db, 'allReviews', docSnap.id))); // Delete associated entries from allReviews
+      snapshot.forEach(docSnap => deleteDoc(doc(db, 'allReviews', docSnap.id)));
     } catch (error) {
-      console.error('Error deleting review:', error); // Log any errors during review deletion
+      console.error('Error deleting review:', error);
     }
   };
 
@@ -206,8 +231,21 @@ export default function ReviewsScreen() {
   const deleteReply = async (reviewId: string, replyId: string) => {
     try {
       await deleteDoc(doc(db, 'cocktails', drinkId, 'reviews', reviewId, 'replies', replyId));
+
+      const allRepliesQuery = query(
+        collection(db, 'allReplies'),
+        where('userId', '==', currentUser?.uid),
+        where('drinkId', '==', drinkId),
+        where('reviewId', '==', reviewId),
+        where('nestedReplyId', '==', replyId)
+      );
+      const snapshot = await getDocs(allRepliesQuery);
+      snapshot.forEach(docSnap => {
+        deleteDoc(doc(db, 'allReplies', docSnap.id));
+      });
+
     } catch (error) {
-      console.error('Error deleting reply:', error); // Log any errors during reply deletion
+      console.error('Error deleting reply:', error);
     }
   };
 
