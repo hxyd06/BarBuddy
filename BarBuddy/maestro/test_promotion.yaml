@@ -1,0 +1,88 @@
+appId: com.hxyd06.BarBuddy
+---
+#Create a promotion to satisfy the requirements of the acceptance test
+- tapOn: 
+    id: Promotions
+
+- tapOn:
+    id: addButton
+
+# Fill in the promotion details
+- tapOn:
+    id: Title
+- inputText: Test Title
+- tapOn: 
+    id: Description
+- inputText: Test Description
+- tapOn: 
+    id: startDate
+- inputText: 2025-05-01
+- tapOn: 
+    id: endDate
+- inputText: 2025-06-01
+
+- tapOn:
+    id: Submit
+
+- assertVisible: Success
+
+#Edit a promotion to satisfy the requirements of the acceptance test
+- tapOn: Ok
+
+#Refresh the promotions list to ensure the newly created promotion is visible
+- tapOn: 
+    id: backButton
+- tapOn:
+    id: Promotions
+
+- scrollUntilVisible: 
+    element: 
+      id: editButton
+    direction: down
+
+- tapOn: 
+    id: editButton     
+
+#Fill in the updated promotion details
+- tapOn: 
+    id: Title
+- eraseText
+- inputText: Updated Test Title
+- tapOn: 
+    id: Description
+- eraseText
+- inputText: Updated Test Description
+- tapOn: 
+    id: startDate
+- eraseText
+- inputText: 2025-05-02
+- tapOn: 
+    id: endDate
+- eraseText
+- inputText: 2025-06-02
+  
+- tapOn: 
+    id: updateButton
+
+- assertVisible: Success
+
+#Delete a promotion to satisfy the requirements of the acceptance test
+- tapOn: Ok
+
+#Refresh the promotions list to ensure the updated promotion is visible
+- tapOn: 
+    id: backButton
+- tapOn:
+    id: Promotions
+
+- scrollUntilVisible:
+    element: 
+      id: deleteButton
+    direction: down
+
+- tapOn:
+    id: deleteButton
+
+- tapOn: Delete
+
+- assertNotVisible: Updated test title
