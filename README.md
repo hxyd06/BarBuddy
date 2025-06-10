@@ -1,9 +1,9 @@
-#**BarBuddy - Your Pocket Mixologist**
+# **BarBuddy - Your Pocket Mixologist**
 
 BarBuddy is your pocket mixologist - discover personalised cocktail recipes, find nearby bars, and connect with a vibrant community of drink-lovers. Users can get tailored drink suggestions, upskill your bartending game, while business owners can promote their venues and special offers directly to cocktail enthusiasts on the app. 
 
 
-##Features: 
+## Features: 
 
    - Explore a range of cocktail recipes.
    - Use our Shopping tab to easily find ingredients to create your favourite drinks. 
@@ -16,7 +16,7 @@ BarBuddy is your pocket mixologist - discover personalised cocktail recipes, fin
    - And More!
 
 
-##Running the App: 
+## Running the App: 
 
    Ensure you have Node.js installed on your device: https://nodejs.org/en/download
 
@@ -41,7 +41,7 @@ BarBuddy is your pocket mixologist - discover personalised cocktail recipes, fin
    Make sure your phone is on the same Wi-Fi network as your computer.
 
 
-##Core Dependancies:
+## Core Dependancies:
 
    - React Native (via Expo)
    - Expo Router
@@ -51,7 +51,7 @@ BarBuddy is your pocket mixologist - discover personalised cocktail recipes, fin
    A list of all dependencies can be found in package.json
 
 
-##Authors:
+## Authors:
 
    - Hayden Winterburn
    - Ryan Peng
