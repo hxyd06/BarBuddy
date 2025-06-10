@@ -163,7 +163,7 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.topCategoryCard} onPress={handleRandomDrink}>
                   <Image source={require('../../assets/images/surpriseme.jpg')} style={styles.categoryImage}/>
-                  <Text style={styles.categoryText}>Surprise Me</Text>
+                  <Text style={styles.categoryText}></Text>
                 </TouchableOpacity>
               </View>
 

@@ -1,0 +1,9 @@
+appId: com.hxyd06.BarBuddy #App ID
+
+---
+#Affirm user is on the explore page 
+- assertVisible: "Explore" #Title
+- assertVisible: "Search for drinks..." #Other elements
+- assertVisible: "Trending Drinks"
+#Check the surprise me button is there
+- assertVisible: "Surprise Me"
